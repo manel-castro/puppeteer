@@ -68,6 +68,7 @@ export const searchInDDBBforNHCandDate = (
 };
 
 (async () => {
+  return;
   // get all DDBB data
   const ddbbData = await parseXlsx("assets/dataPlaOnco2019-2020");
 
@@ -293,8 +294,6 @@ export const searchInDDBBforNHCandDate = (
         // console.log(currentDdbbRow);
       }
     }
-
-    console.log("occurrences.length", occurrencesSAP.length);
 
     if (occurrencesSAP.length === 1) {
       crossedArraySAP.push(occurrencesSAP[0]);

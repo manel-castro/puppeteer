@@ -1,8 +1,9 @@
-const NOSINOC = {
+export const NOSINOC = {
   NO: "0",
   SI: "1",
-  "NO-CONSTA": "9",
+  NOCONSTA: "9",
 };
+export type NOSINOCType = typeof NOSINOC;
 const ABC = {
   A: "1",
   B: "2",
@@ -11,52 +12,53 @@ const ABC = {
 };
 
 export const HTML_IDS_LIVER = {
-  TANCAMENT_REGISTRE_DADES: "form:INPUT2_6779_44691_137978",
-  DATA_INGRES: "form:INPUT_6779_44691_137875",
-  DATA_ALTA: "form:INPUT_6779_44691_137874",
-  DATA_DIAGNOSTIC: "form:INPUT_6779_44691_166797",
-  DATA_IQ: "form:INPUT_6779_44691_137079",
-  EDAT_IQ: "form:INPUT_6779_44691_137870",
-  PES_KG: "form:INPUT_6779_44691_166781",
-  TALLA_CM: "form:INPUT_6779_44691_166782",
+  TANCAMENT_REGISTRE_DADES: "#form\\3A INPUT2_6779_44691_137978",
+  DATA_INGRES: "#form\\3A INPUT_6779_44691_137875",
+  DATA_ALTA: "#form\\3A INPUT_6779_44691_137874",
+  DATA_DIAGNOSTIC: "#form\\3A INPUT_6779_44691_166797",
+  DATA_IQ: "#form\\3A INPUT_6779_44691_137079",
+  EDAT_IQ: "#form\\3A INPUT_6779_44691_137870",
+  PES_KG: "#form\\3A INPUT_6779_44691_166781",
+  TALLA_CM: "#form\\3A INPUT_6779_44691_166782",
   ASA: {
     ID: "#form\\3A INPUT_6779_44691_137903",
     VALUES: { 1: "I", 2: "II", 3: "III", 4: "IV", 5: "V" },
   },
   ECOG: {
-    ID: "form:INPUT_6779_44691_166784",
+    ID: "#form\\3A INPUT_6779_44691_166784",
     VALUES: {
       8: "8",
     },
   },
   ERAS: {
-    ID: "form:INPUT_6779_44691_166785",
+    ID: "#form\\3A INPUT_6779_44691_166785",
     VALUES: {
+      // gotta be NO
       9: "9",
     },
   },
   CMD_ABANS: {
-    ID: "form:INPUT_6779_44691_137391",
+    ID: "#form\\3A INPUT_6779_44691_137391",
     VALUES: NOSINOC,
   },
-  TEXT_DATA_CMD_ABANS: "form:INPUT_6779_44691_166786",
+  TEXT_DATA_CMD_ABANS: "#form\\3A INPUT_6779_44691_166786",
   INFORME_CMD_ABANS: {
-    ID: "form:INPUT_6779_44691_166787",
+    ID: "#form\\3A INPUT_6779_44691_16678",
     VALUES: NOSINOC,
   },
   CMD_DESPRES: {
-    ID: "form:INPUT_6779_44691_137392",
+    ID: "#form\\3A INPUT_6779_44691_137392",
     VALUES: NOSINOC,
   },
 
   IND_CIRU_HEP: {
-    ID: "form:INPUT_6779_44691_137955",
+    ID: "#form\\3A INPUT_6779_44691_137955",
     VALUES: {
       MH: "1",
     },
   },
   TRACTAMENT_H: {
-    ID: "form:INPUT_6779_44691_336323",
+    ID: "#form\\3A INPUT_6779_44691_336323",
     VALUES: {
       QUIRURGIC_ONLY: "1",
       LOCOREGIONAL_ONLY: "2",
@@ -64,7 +66,7 @@ export const HTML_IDS_LIVER = {
     },
   },
   ACCESS_IQ: {
-    ID: "form:INPUT_6779_44691_137973",
+    ID: "#form\\3A INPUT_6779_44691_137973",
     VALUES: {
       NO: "0",
       OBERTA: "1",

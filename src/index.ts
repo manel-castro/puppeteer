@@ -6,7 +6,7 @@ import { fileURLToPath } from "url";
 import { HEADERS_LIVER_DDBB } from "./crossExcels";
 
 import { GENERAL_CONSTS } from "./consts/general";
-import { HTML_IDS_LIVER } from "./consts/fetge";
+import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
 import { parseXlsx } from "./excel-functions";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -40,7 +40,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/5666827a-3365-4d3f-8458-035328c415b9",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/69f0a4d2-9bb1-4bd1-84da-57601ecd67e6",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -160,22 +160,61 @@ const getScrappingData = async () => {
   const ddbbData = await parseXlsx("output/crossedData");
   const HEADERS = ddbbData.shift();
 
+  // - check if name and lastnames are equal to ddbb
+  // - check if Register is closed
+  // - in case it's closed uncheck it
+
   const { browser, pages, frame } = await getInterfacePuppeteerSetup();
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 1; i++) {
     const currentObservation = ddbbData[i];
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
-    if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
-      console.error("somet hing went wrong");
-    }
+    const ValueDataIngres = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
+    const ValueDataDiagnostic =
+      ValueDataIngres - (Math.random() * (10 - 5) + 5); // !!
+    const ValueDataAlta =
+      ValueDataIngres + currentObservation[HEADERS_LIVER_DDBB.ESTADA];
+    const ValueDataIQ = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
+    const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
+    const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES]; //??
+    const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla]; //??
+    const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
+    const ValueEcog = "NO-CONSTA"; //??
+    const ValueEras = "NO"; //??
+    const ValueCMDAbans = currentObservation[HEADERS_LIVER_DDBB.COMITE];
+    const ValueCMDInforme = ValueCMDAbans;
+    const ValueCMDAbansData =
+      ValueDataIngres - (Math.random() * (40 - 30) + 30); // !!  2 months before aprox
+    const ValueCMDAfter = "NO-CONSTA"; // !!
+
+    const ValueTipusCirugHepatica = "MTHs";
+
+    // Tractament hepatic (técnica)
+    const ValueTecnica = currentObservation[HEADERS_LIVER_DDBB.TECNICA];
+    const ValueRadio = currentObservation[HEADERS_LIVER_DDBB.RF];
+    const ValueMW = currentObservation[HEADERS_LIVER_DDBB.mw];
+
+    const wasIQ = ValueTecnica && ValueTecnica !== ""; // sometimes fail: check inference from other variables
+
+    // const ValueTractamentHepatic = wasIQ ?
+
+    console.log(ValueDataIngres);
+    console.log(ValueDataAlta);
+    console.log(ValueDataDiagnostic);
+
+    // continue;
+
+    // if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
+    //   console.error("somet hing went wrong");
+    // }
 
     // GO to list item form
-    const currentItemId = LINK_LIST_ITEM(i);
-    await Promise.all([
-      frame.$eval(currentItemId, (el: any) => el.click()),
-      frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    ]);
+    // const currentItemId = LINK_LIST_ITEM(i);
+    // await Promise.all([
+    //   frame.$eval(currentItemId, (el: any) => el.click()),
+    //   frame.waitForNavigation({ waitUntil: "networkidle2" }),
+    // ]);
 
     // specific code for LIVER
 
@@ -188,25 +227,43 @@ const getScrappingData = async () => {
 
 
      */
-    const { DATA_INGRES, DATA_ALTA } = HTML_IDS_LIVER;
-    const ValueDataIngres = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
-    const ValueDataAlta =
-      ValueDataIngres + currentObservation[HEADERS_LIVER_DDBB.ESTADA];
 
-    const ValueDataDiagnostic = "NOT_KNOWN"; // NOT KNOWN
+    // const IsFormClosed_ID = HTML_IDS_LIVER.TANCAMENT_REGISTRE_DADES;
+    // await Promise.all([
+    //   frame.$eval(IsFormClosed_ID, async (el: any) => {
+    //     if (el.value === "true") {
+    //       el.click();
+    //     }
+    //   }),
+    //   frame.waitForNavigation({ waitUntil: "networkidle2" }),
+    // ]);
+
+    // START INPUTING DATA
+    const { DATA_INGRES, DATA_ALTA, DATA_DIAGNOSTIC } = HTML_IDS_LIVER;
+
+    console.log("int: ");
+    console.log(ValueDataIngres);
+
     await Promise.all([
       // CHECK VALUES OF ASA WITH EXISTING FORM
-      frame.select(ASA.ID, ASA.VALUES[ValueASA]),
-      // frame.waitForNavigation({ waitUntil: "networkidle2" }),
+      frame.$eval(
+        DATA_INGRES,
+        (el: any, value) => (el.value = "124"),
+        ValueDataIngres
+      ),
+      // frame.select(DATA_ALTA, ValueDataAlta),
+      // frame.select(DATA_DIAGNOSTIC, ValueDataAlta),
+      // frame.waitForNavigation({ waitUntil: "networkidle2" }),,
+      frame.waitForNavigation({ waitUntil: "networkidle2" }),
     ]);
 
     const { ASA } = HTML_IDS_LIVER;
-    const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
-    await Promise.all([
-      // CHECK VALUES OF ASA WITH EXISTING FORM
-      frame.select(ASA.ID, ASA.VALUES[ValueASA]),
-      // frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    ]);
+
+    // await Promise.all([
+    //   // CHECK VALUES OF ASA WITH EXISTING FORM
+    //   frame.select(ASA.ID, ASA.VALUES[ValueASA]),
+    //   // frame.waitForNavigation({ waitUntil: "networkidle2" }),
+    // ]);
 
     console.log(`patient nº ${i} searched`);
 
