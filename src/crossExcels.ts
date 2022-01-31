@@ -21,7 +21,6 @@ import { buildXlsxFile, parseXlsx } from "./excel-functions";
 
 export const addDaysTo1Jan1900 = (days: number) => {
   // used for computing xlsx days
-  console.log("days: ", days);
 
   const date = new Date(1900, 0, 0);
   date.setDate(date.getDate() + days);
@@ -47,11 +46,7 @@ export const TransformJSToXlsxDateFormat = (dateJSFormat: Date) => {
 export const TransformXlsxToJSDateFormat = (xlsxDate: number | string) => {
   if (typeof xlsxDate === "string") xlsxDate = parseInt(xlsxDate);
 
-  console.log("xlsxDate: ", xlsxDate);
-
   const xlsxDateInJs = addDaysTo1Jan1900(xlsxDate);
-
-  console.log("xlsxDateInJs:", xlsxDateInJs);
 
   const Day = xlsxDateInJs.getDay();
   const Month = xlsxDateInJs.getMonth();

@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { HEADERS_LIVER_DDBB, TransformXlsxToJSDateFormat } from "./crossExcels";
 
-import { GENERAL_CONSTS } from "./consts/general";
+import { GENERAL_CONSTS, INTERFACE_IDS } from "./consts/general";
 import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
 import { parseXlsx } from "./excel-functions";
 
@@ -27,11 +27,9 @@ const {
   TEXT_INPUT_TO_DATE,
   TEXT_INPUT_NHC,
   BUTTON_EXECUTE_FILTER,
-  TEXT_INPUT_FILTER_BY_LIVER,
-} = GENERAL_CONSTS.INTERFACE_IDS.FILTER_PAGE;
-const { BUTTON_BACK_LIST, LINK_LIST_ITEM } =
-  GENERAL_CONSTS.INTERFACE_IDS.LIST_PAGE;
-const { BUTTON_BACK_FORM } = GENERAL_CONSTS.INTERFACE_IDS.FORM_PAGE;
+} = INTERFACE_IDS.FILTER_PAGE;
+const { BUTTON_BACK_LIST, LINK_LIST_ITEM } = INTERFACE_IDS.LIST_PAGE;
+const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
 
 type InterfacePuppeteerSetupRes = {
   browser: puppeteer.Browser;
@@ -166,7 +164,25 @@ const getScrappingData = async () => {
 
   const { browser, pages, frame } = await getInterfacePuppeteerSetup();
 
+  const { TEXT_CURRENT_FILTER_PAGE_TYPE, LINK_FILTER_BY_LIVER } =
+    INTERFACE_IDS.FILTER_PAGE;
+
+  let formIsLiver = true;
+
+  // frame.$(TEXT_CURRENT_FILTER_PAGE_TYPE).
+  await frame.$eval(TEXT_CURRENT_FILTER_PAGE_TYPE, (el: any, frame) => {
+    if (
+      el.value !==
+      "Candidats: Enregistrament de dades > Pacients amb dades de càncer i cirurgia hepàtica"
+    ) {
+      formIsLiver = false;
+    }
+  });
+  if (!formIsLiver)
+    await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
+
   for (let i = 0; i < 1; i++) {
+    continue;
     const currentObservation = ddbbData[i];
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
@@ -180,12 +196,6 @@ const getScrappingData = async () => {
       parseInt(currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0")
     ) // !! estada not always defined
       .toString();
-
-    console.log("valueDataIngres: ", ValueDataIngres);
-    console.log(
-      "currentObservation[HEADERS_LIVER_DDBB.ESTADA]: ",
-      currentObservation[HEADERS_LIVER_DDBB.ESTADA]
-    );
 
     const ValueDataIQ = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
     const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
@@ -212,10 +222,6 @@ const getScrappingData = async () => {
     const wasIQ = ValueTecnica && ValueTecnica !== ""; // sometimes fail: check inference from other variables
 
     // const ValueTractamentHepatic = wasIQ ?
-
-    console.log(ValueDataIngres);
-    console.log(ValueDataAlta);
-    console.log(ValueDataDiagnostic);
 
     // continue;
 
@@ -253,18 +259,23 @@ const getScrappingData = async () => {
     // ]);
 
     // START INPUTING DATA
-    const { DATA_INGRES, DATA_ALTA, DATA_DIAGNOSTIC } = HTML_IDS_LIVER;
+    const {
+      DATA_INGRES,
+      DATA_ALTA,
+      DATA_DIAGNOSTIC,
+      EDAT_IQ,
+      PES_KG,
+      TALLA_CM,
+    } = HTML_IDS_LIVER;
 
     const DataIngresInOddFormat = TransformXlsxToJSDateFormat(ValueDataIngres);
-    console.log("DataIngresInOddFormat: ", DataIngresInOddFormat);
 
     const DataAltaInOddFormat = TransformXlsxToJSDateFormat(ValueDataAlta);
-    console.log("DataAltaInOddFormat: ", DataAltaInOddFormat);
+
     const DataDiagnosticInOddFormat =
       TransformXlsxToJSDateFormat(ValueDataDiagnostic);
-    console.log("DataDiagnosticInOddFormat: ", DataDiagnosticInOddFormat);
+
     const DataIQInOddFormat = TransformXlsxToJSDateFormat(ValueDataIQ);
-    console.log("DataIQInOddFormat: ", DataIQInOddFormat);
 
     await Promise.all([
       // CHECK VALUES OF ASA WITH EXISTING FORM
@@ -288,17 +299,22 @@ const getScrappingData = async () => {
         (el: any, value) => (el.value = value),
         DataIQInOddFormat
       ),
+      frame.$eval(EDAT_IQ, (el: any, value) => (el.value = value), ValueEdatIQ),
+      frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValuePes),
+      frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValueTalla),
 
       frame.waitForNavigation({ waitUntil: "networkidle2" }),
     ]);
 
-    const { ASA } = HTML_IDS_LIVER;
+    const { ASA, ECOG, ERAS } = HTML_IDS_LIVER;
 
-    // await Promise.all([
-    //   // CHECK VALUES OF ASA WITH EXISTING FORM
-    //   frame.select(ASA.ID, ASA.VALUES[ValueASA]),
-    //   // frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    // ]);
+    await Promise.all([
+      // CHECK VALUES OF ASA WITH EXISTING FORM
+      frame.select(ASA.ID, ASA.VALUES[ValueASA]),
+      frame.select(ECOG.ID, ECOG.VALUES[ValueEcog]),
+      frame.select(ERAS.ID, ERAS.VALUES[ValueEras]),
+      // frame.waitForNavigation({ waitUntil: "networkidle2" }),
+    ]);
 
     console.log(`patient nº ${i} searched`);
 
