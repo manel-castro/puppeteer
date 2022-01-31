@@ -87,28 +87,39 @@ const ExecutePuppeteerSearch = (
       TO: "2020",
     };
 
-    await Promise.all([
-      frame.$eval(
-        TEXT_INPUT_FROM_DATE,
-        (el: any, FROM) => (el.value = FROM),
-        DATES.FROM
-      ),
-      frame.$eval(
-        TEXT_INPUT_TO_DATE,
-        (el: any, TO) => (el.value = TO),
-        DATES.TO
-      ),
-      frame.$eval(TEXT_INPUT_NHC, (el: any, nhc) => (el.value = nhc), NHC),
-    ]);
+    try {
+      await Promise.all([
+        frame.$eval(
+          TEXT_INPUT_FROM_DATE,
+          (el: any, FROM) => (el.value = FROM),
+          DATES.FROM
+        ),
+        frame.$eval(
+          TEXT_INPUT_TO_DATE,
+          (el: any, TO) => (el.value = TO),
+          DATES.TO
+        ),
+        frame.$eval(TEXT_INPUT_NHC, (el: any, nhc) => (el.value = nhc), NHC),
+      ]);
+    } catch (e) {
+      console.error("Unable to complete form search input data ");
+      console.error(e);
+    }
 
     // variables must be passed as node env varibles, see:
     // https://stackoverflow.com/questions/55524329/puppeteer-access-to-outer-scope-variable-fails
 
     // // SEARCH
-    await Promise.all([
-      frame.$eval(BUTTON_EXECUTE_FILTER, (el: any) => el.click()),
-      frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    ]);
+
+    try {
+      await Promise.all([
+        frame.$eval(BUTTON_EXECUTE_FILTER, (el: any) => el.click()),
+        frame.waitForNavigation({ waitUntil: "networkidle2" }),
+      ]);
+    } catch (e) {
+      console.error("Unable to complete form search click search");
+      console.error(e);
+    }
 
     res("LOADED");
 
@@ -206,28 +217,26 @@ const getScrappingData = async () => {
     const ValueEcog = "NO-VALORAT"; //??
     const ValueEras = "NO"; //??
 
-    // Tractament hepatic (técnica)
-    const ValueTecnica = currentObservation[HEADERS_LIVER_DDBB.TECNICA];
-    const ValueRadio = currentObservation[HEADERS_LIVER_DDBB.RF];
-    const ValueMW = currentObservation[HEADERS_LIVER_DDBB.mw];
-
-    const wasIQ = ValueTecnica && ValueTecnica !== ""; // sometimes fail: check inference from other variables
-
     // const ValueTractamentHepatic = wasIQ ?
 
     // continue;
-    if (false)
-      if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
-        console.error("somet hing went wrong");
-      }
+    // if (false)
+    if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
+      console.error("somet hing went wrong");
+    }
 
     // GO to list item form
     const currentItemId = LINK_LIST_ITEM(i);
-    if (false)
+    // if (false)
+    try {
       await Promise.all([
         frame.$eval(currentItemId, (el: any) => el.click()),
         frame.waitForNavigation({ waitUntil: "networkidle2" }),
       ]);
+    } catch (e) {
+      console.error("Unable to complete click list link");
+      console.error(e);
+    }
 
     // specific code for LIVER
 
@@ -241,15 +250,21 @@ const getScrappingData = async () => {
 
      */
 
-    // const IsFormClosed_ID = HTML_IDS_LIVER.TANCAMENT_REGISTRE_DADES;
-    // await Promise.all([
-    //   frame.$eval(IsFormClosed_ID, async (el: any) => {
-    //     if (el.value === "true") {
-    //       el.click();
-    //     }
-    //   }),
-    //   frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    // ]);
+    // if (false) {
+    try {
+      const IsFormClosed_ID = HTML_IDS_LIVER.TANCAMENT_REGISTRE_DADES;
+      await frame.$eval(IsFormClosed_ID, (el: any) => {
+        if (el.value === "true") {
+          el.click();
+        }
+      });
+
+      await frame.waitForNavigation({ waitUntil: "networkidle2" });
+    } catch (e) {
+      console.error("Tancament registre func error");
+      console.error(e);
+    }
+    // }
 
     // START INPUTING DATA
     const {
@@ -270,7 +285,9 @@ const getScrappingData = async () => {
       TransformXlsxToJSDateFormat(ValueDataDiagnostic);
 
     const DataIQInOddFormat = TransformXlsxToJSDateFormat(ValueDataIQ);
-    if (false)
+    // if (false)
+
+    try {
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
         frame.$eval(
@@ -307,10 +324,17 @@ const getScrappingData = async () => {
 
         frame.waitForNavigation({ waitUntil: "networkidle2" }),
       ]);
+    } catch (e) {
+      console.error(
+        "unable to complete promise all for general input data, error message: "
+      );
+      console.error(e);
+    }
 
     const { ASA, ECOG, ERAS } = HTML_IDS_LIVER;
 
-    if (false)
+    // if (false)
+    try {
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
         frame.select(ASA.ID, ASA.VALUES[ValueASA]),
@@ -318,7 +342,12 @@ const getScrappingData = async () => {
         frame.select(ERAS.ID, ERAS.VALUES[ValueEras]),
         // frame.waitForNavigation({ waitUntil: "networkidle2" }),
       ]);
-
+    } catch (e) {
+      console.error(
+        "unable to complete promise all for general ASA/ECOG/ERAS data, error message: "
+      );
+      console.error(e);
+    }
     const ValueCMDAbans =
       currentObservation[HEADERS_LIVER_DDBB.COMITE]?.toUpperCase() ||
       "NOCONSTA";
@@ -326,40 +355,100 @@ const getScrappingData = async () => {
     console.log("ValueCMDAbans: ", ValueCMDAbans);
 
     const ValueCMDInforme = ValueCMDAbans;
-    const ValueCMDAbansData = (
-      parseInt(ValueDataIngres) -
-      (Math.random() * (60 - 50) + 50)
-    ).toString(); // !!  2 months before aprox
+    const ValueCMDAbansData = ValueCMDAbans
+      ? (
+          parseInt(ValueDataIngres) -
+          (Math.random() * (60 - 50) + 50)
+        ).toString()
+      : ""; // !!  2 months before aprox
     const ValueCMDAfter = "NOCONSTA"; // !!
 
     const ValueTipusCirugHepatica = "MTHs";
+    try {
+      await Promise.all([
+        // CHECK VALUES OF ASA WITH EXISTING FORM
+        frame.select(
+          HTML_IDS_LIVER.CMD_ABANS.ID,
+          HTML_IDS_LIVER.CMD_ABANS.VALUES[ValueCMDAbans]
+        ),
+
+        frame.select(
+          HTML_IDS_LIVER.CMD_DESPRES.ID,
+          HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
+        ),
+      ]);
+    } catch (e) {
+      console.error(
+        "unable to complete promise all for CMD data before condition, error message: "
+      );
+      console.error(e);
+    }
+
+    //____TODO: TEST THIS CONDITION____
+
+    if (ValueCMDAbans === "SI") {
+      try {
+        await Promise.all([
+          frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
+          frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
+        ]);
+
+        await Promise.all([
+          frame.$eval(
+            HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
+            (el: any) => (el.value = ValueCMDAbansData)
+          ),
+          frame.select(
+            HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
+            HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
+          ),
+        ]);
+      } catch (e) {
+        console.error(
+          "unable to complete promise all for CMD data after condition CMD = true, error message: "
+        );
+        console.error(e);
+      }
+    }
+
+    const ValueIndicacioCirugiaHep = "MH";
+
+    // await frame.waitForNavigation({ waitUntil: "networkidle2" });
+
+    // Tractament hepatic (técnica)
+    const ValueTecnica = (
+      currentObservation[HEADERS_LIVER_DDBB.TECNICA] as string
+    ).toLowerCase();
+    const ValueRadio = currentObservation[HEADERS_LIVER_DDBB.RF];
+    const ValueMW = currentObservation[HEADERS_LIVER_DDBB.mw];
+
+    const wasIQ = ValueTecnica && ValueTecnica !== ""; // sometimes fail: check inference from other variables
+
+    //   VALUES: {
+    //     QUIRURGIC_ONLY: string;
+    //     LOCOREGIONAL_ONLY: string;
+    //     LOCOREGIONAL_AND_QUIRURGIC: string;
+    // }
+
+    const tecnicaIsQuirurgicUnicament =
+      wasIQ &&
+      ValueTecnica.includes("hepatectomia major") &&
+      ValueTecnica.includes("resecció");
+
+    const ValueTractamentHepátic =
+      tecnicaIsQuirurgicUnicament && (ValueRadio || ValueMW)
+        ? "LOCOREGIONAL_AND_QUIRURGIC"
+        : "QUIRURGIC_ONLY"; // no data for Locoregional Only, done by Hospitals without resources
 
     await Promise.all([
-      // CHECK VALUES OF ASA WITH EXISTING FORM
       frame.select(
-        HTML_IDS_LIVER.CMD_ABANS.ID,
-        HTML_IDS_LIVER.CMD_ABANS.VALUES[ValueCMDAbans]
+        HTML_IDS_LIVER.IND_CIRU_HEP.ID,
+        HTML_IDS_LIVER.IND_CIRU_HEP.VALUES[ValueIndicacioCirugiaHep]
       ),
 
       frame.select(
-        HTML_IDS_LIVER.CMD_DESPRES.ID,
-        HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
-      ),
-    ]);
-
-    await Promise.all([
-      frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
-      frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
-    ]);
-
-    await Promise.all([
-      frame.$eval(
-        HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
-        (el: any) => (el.value = ValueCMDAbansData)
-      ),
-      frame.select(
-        HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
-        HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
+        HTML_IDS_LIVER.TRACTAMENT_H.ID,
+        HTML_IDS_LIVER.TRACTAMENT_H.VALUES[ValueTractamentHepátic]
       ),
     ]);
 
