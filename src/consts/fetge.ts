@@ -27,14 +27,14 @@ export const HTML_IDS_LIVER = {
   ECOG: {
     ID: "#form\\3A INPUT_6779_44691_166784",
     VALUES: {
-      8: "8",
+      "NO-VALORAT": "8",
     },
   },
   ERAS: {
     ID: "#form\\3A INPUT_6779_44691_166785",
     VALUES: {
       // gotta be NO
-      9: "9",
+      NO: "0",
     },
   },
   CMD_ABANS: {
@@ -43,7 +43,7 @@ export const HTML_IDS_LIVER = {
   },
   TEXT_DATA_CMD_ABANS: "#form\\3A INPUT_6779_44691_166786",
   INFORME_CMD_ABANS: {
-    ID: "#form\\3A INPUT_6779_44691_16678",
+    ID: "#form\\3A INPUT_6779_44691_166787",
     VALUES: NOSINOC,
   },
   CMD_DESPRES: {

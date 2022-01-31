@@ -203,17 +203,8 @@ const getScrappingData = async () => {
     const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES]; //??
     const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla]; //??
     const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
-    const ValueEcog = "NO-CONSTA"; //??
+    const ValueEcog = "NO-VALORAT"; //??
     const ValueEras = "NO"; //??
-    const ValueCMDAbans = currentObservation[HEADERS_LIVER_DDBB.COMITE];
-    const ValueCMDInforme = ValueCMDAbans;
-    const ValueCMDAbansData = (
-      parseInt(ValueDataIngres) -
-      (Math.random() * (40 - 30) + 30)
-    ).toString(); // !!  2 months before aprox
-    const ValueCMDAfter = "NO-CONSTA"; // !!
-
-    const ValueTipusCirugHepatica = "MTHs";
 
     // Tractament hepatic (técnica)
     const ValueTecnica = currentObservation[HEADERS_LIVER_DDBB.TECNICA];
@@ -279,47 +270,98 @@ const getScrappingData = async () => {
       TransformXlsxToJSDateFormat(ValueDataDiagnostic);
 
     const DataIQInOddFormat = TransformXlsxToJSDateFormat(ValueDataIQ);
+    if (false)
+      await Promise.all([
+        // CHECK VALUES OF ASA WITH EXISTING FORM
+        frame.$eval(
+          DATA_INGRES,
+          (el: any, value) => (el.value = value),
+          DataIngresInOddFormat
+        ),
+        frame.$eval(
+          DATA_ALTA,
+          (el: any, value) => (el.value = value),
+          DataAltaInOddFormat
+        ),
+        frame.$eval(
+          DATA_DIAGNOSTIC,
+          (el: any, value) => (el.value = value),
+          DataDiagnosticInOddFormat
+        ),
+        frame.$eval(
+          DATA_IQ,
+          (el: any, value) => (el.value = value),
+          DataIQInOddFormat
+        ),
+        frame.$eval(
+          EDAT_IQ,
+          (el: any, value) => (el.value = value),
+          ValueEdatIQ
+        ),
+        frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValuePes),
+        frame.$eval(
+          TALLA_CM,
+          (el: any, value) => (el.value = value),
+          ValueTalla
+        ),
 
-    await Promise.all([
-      // CHECK VALUES OF ASA WITH EXISTING FORM
-      frame.$eval(
-        DATA_INGRES,
-        (el: any, value) => (el.value = value),
-        DataIngresInOddFormat
-      ),
-      frame.$eval(
-        DATA_ALTA,
-        (el: any, value) => (el.value = value),
-        DataAltaInOddFormat
-      ),
-      frame.$eval(
-        DATA_DIAGNOSTIC,
-        (el: any, value) => (el.value = value),
-        DataDiagnosticInOddFormat
-      ),
-      frame.$eval(
-        DATA_IQ,
-        (el: any, value) => (el.value = value),
-        DataIQInOddFormat
-      ),
-      frame.$eval(EDAT_IQ, (el: any, value) => (el.value = value), ValueEdatIQ),
-      frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValuePes),
-      frame.$eval(TALLA_CM, (el: any, value) => (el.value = value), ValueTalla),
-
-      frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    ]);
+        frame.waitForNavigation({ waitUntil: "networkidle2" }),
+      ]);
 
     const { ASA, ECOG, ERAS } = HTML_IDS_LIVER;
 
+    if (false)
+      await Promise.all([
+        // CHECK VALUES OF ASA WITH EXISTING FORM
+        frame.select(ASA.ID, ASA.VALUES[ValueASA]),
+        frame.select(ECOG.ID, ECOG.VALUES[ValueEcog]),
+        frame.select(ERAS.ID, ERAS.VALUES[ValueEras]),
+        // frame.waitForNavigation({ waitUntil: "networkidle2" }),
+      ]);
+
+    const ValueCMDAbans =
+      currentObservation[HEADERS_LIVER_DDBB.COMITE]?.toUpperCase() ||
+      "NOCONSTA";
+
+    console.log("ValueCMDAbans: ", ValueCMDAbans);
+
+    const ValueCMDInforme = ValueCMDAbans;
+    const ValueCMDAbansData = (
+      parseInt(ValueDataIngres) -
+      (Math.random() * (60 - 50) + 50)
+    ).toString(); // !!  2 months before aprox
+    const ValueCMDAfter = "NOCONSTA"; // !!
+
+    const ValueTipusCirugHepatica = "MTHs";
+
     await Promise.all([
       // CHECK VALUES OF ASA WITH EXISTING FORM
-      frame.select(ASA.ID, ASA.VALUES[ValueASA]),
-      frame.select(ECOG.ID, ECOG.VALUES[ValueEcog]),
-      frame.select(ERAS.ID, ERAS.VALUES[ValueEras]),
-      // frame.waitForNavigation({ waitUntil: "networkidle2" }),
+      frame.select(
+        HTML_IDS_LIVER.CMD_ABANS.ID,
+        HTML_IDS_LIVER.CMD_ABANS.VALUES[ValueCMDAbans]
+      ),
+
+      frame.select(
+        HTML_IDS_LIVER.CMD_DESPRES.ID,
+        HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
+      ),
     ]);
 
-    console.log(`patient nº ${i} searched`);
+    await Promise.all([
+      frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
+      frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
+    ]);
+
+    await Promise.all([
+      frame.$eval(
+        HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
+        (el: any) => (el.value = ValueCMDAbansData)
+      ),
+      frame.select(
+        HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
+        HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
+      ),
+    ]);
 
     // await pages[0].reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
 
