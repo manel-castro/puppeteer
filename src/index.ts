@@ -3,7 +3,7 @@ import xlsx, { WorkSheet } from "node-xlsx";
 import fs, { unwatchFile } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { HEADERS_LIVER_DDBB } from "./crossExcels";
+import { HEADERS_LIVER_DDBB, TransformXlsxToJSDateFormat } from "./crossExcels";
 
 import { GENERAL_CONSTS } from "./consts/general";
 import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
@@ -171,10 +171,22 @@ const getScrappingData = async () => {
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
     const ValueDataIngres = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
-    const ValueDataDiagnostic =
-      ValueDataIngres - (Math.random() * (10 - 5) + 5); // !!
-    const ValueDataAlta =
-      ValueDataIngres + currentObservation[HEADERS_LIVER_DDBB.ESTADA];
+    const ValueDataDiagnostic = (
+      parseInt(ValueDataIngres) -
+      (Math.random() * (10 - 5) + 5)
+    ).toString(); // !!
+    const ValueDataAlta = (
+      parseInt(ValueDataIngres) +
+      parseInt(currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0")
+    ) // !! estada not always defined
+      .toString();
+
+    console.log("valueDataIngres: ", ValueDataIngres);
+    console.log(
+      "currentObservation[HEADERS_LIVER_DDBB.ESTADA]: ",
+      currentObservation[HEADERS_LIVER_DDBB.ESTADA]
+    );
+
     const ValueDataIQ = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
     const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
     const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES]; //??
@@ -184,8 +196,10 @@ const getScrappingData = async () => {
     const ValueEras = "NO"; //??
     const ValueCMDAbans = currentObservation[HEADERS_LIVER_DDBB.COMITE];
     const ValueCMDInforme = ValueCMDAbans;
-    const ValueCMDAbansData =
-      ValueDataIngres - (Math.random() * (40 - 30) + 30); // !!  2 months before aprox
+    const ValueCMDAbansData = (
+      parseInt(ValueDataIngres) -
+      (Math.random() * (40 - 30) + 30)
+    ).toString(); // !!  2 months before aprox
     const ValueCMDAfter = "NO-CONSTA"; // !!
 
     const ValueTipusCirugHepatica = "MTHs";
@@ -205,16 +219,16 @@ const getScrappingData = async () => {
 
     // continue;
 
-    // if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
-    //   console.error("somet hing went wrong");
-    // }
+    if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
+      console.error("somet hing went wrong");
+    }
 
     // GO to list item form
-    // const currentItemId = LINK_LIST_ITEM(i);
-    // await Promise.all([
-    //   frame.$eval(currentItemId, (el: any) => el.click()),
-    //   frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    // ]);
+    const currentItemId = LINK_LIST_ITEM(i);
+    await Promise.all([
+      frame.$eval(currentItemId, (el: any) => el.click()),
+      frame.waitForNavigation({ waitUntil: "networkidle2" }),
+    ]);
 
     // specific code for LIVER
 
@@ -241,19 +255,40 @@ const getScrappingData = async () => {
     // START INPUTING DATA
     const { DATA_INGRES, DATA_ALTA, DATA_DIAGNOSTIC } = HTML_IDS_LIVER;
 
-    console.log("int: ");
-    console.log(ValueDataIngres);
+    const DataIngresInOddFormat = TransformXlsxToJSDateFormat(ValueDataIngres);
+    console.log("DataIngresInOddFormat: ", DataIngresInOddFormat);
+
+    const DataAltaInOddFormat = TransformXlsxToJSDateFormat(ValueDataAlta);
+    console.log("DataAltaInOddFormat: ", DataAltaInOddFormat);
+    const DataDiagnosticInOddFormat =
+      TransformXlsxToJSDateFormat(ValueDataDiagnostic);
+    console.log("DataDiagnosticInOddFormat: ", DataDiagnosticInOddFormat);
+    const DataIQInOddFormat = TransformXlsxToJSDateFormat(ValueDataIQ);
+    console.log("DataIQInOddFormat: ", DataIQInOddFormat);
 
     await Promise.all([
       // CHECK VALUES OF ASA WITH EXISTING FORM
       frame.$eval(
         DATA_INGRES,
-        (el: any, value) => (el.value = "124"),
-        ValueDataIngres
+        (el: any, value) => (el.value = value),
+        DataIngresInOddFormat
       ),
-      // frame.select(DATA_ALTA, ValueDataAlta),
-      // frame.select(DATA_DIAGNOSTIC, ValueDataAlta),
-      // frame.waitForNavigation({ waitUntil: "networkidle2" }),,
+      frame.$eval(
+        DATA_ALTA,
+        (el: any, value) => (el.value = value),
+        DataAltaInOddFormat
+      ),
+      frame.$eval(
+        DATA_DIAGNOSTIC,
+        (el: any, value) => (el.value = value),
+        DataDiagnosticInOddFormat
+      ),
+      frame.$eval(
+        DATA_DIAGNOSTIC,
+        (el: any, value) => (el.value = value),
+        DataIQInOddFormat
+      ),
+
       frame.waitForNavigation({ waitUntil: "networkidle2" }),
     ]);
 

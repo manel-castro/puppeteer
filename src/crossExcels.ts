@@ -14,10 +14,14 @@ import { buildXlsxFile, parseXlsx } from "./excel-functions";
 3. 
 
 
+** Values that don't exist, ask first why. 
+** Can they be interpolated? 
+
 */
 
-export const addDaysTo1Jan1900 = (days) => {
+export const addDaysTo1Jan1900 = (days: number) => {
   // used for computing xlsx days
+  console.log("days: ", days);
 
   const date = new Date(1900, 0, 0);
   date.setDate(date.getDate() + days);
@@ -38,6 +42,22 @@ export const TransformJSToXlsxDateFormat = (dateJSFormat: Date) => {
   const differenceInTime = dateJSFormat.getTime() - dateXlsxReference.getTime();
   const daysFrom1900 = differenceInTime / (1000 * 3600 * 24);
   return Math.round(daysFrom1900);
+};
+
+export const TransformXlsxToJSDateFormat = (xlsxDate: number | string) => {
+  if (typeof xlsxDate === "string") xlsxDate = parseInt(xlsxDate);
+
+  console.log("xlsxDate: ", xlsxDate);
+
+  const xlsxDateInJs = addDaysTo1Jan1900(xlsxDate);
+
+  console.log("xlsxDateInJs:", xlsxDateInJs);
+
+  const Day = xlsxDateInJs.getDay();
+  const Month = xlsxDateInJs.getMonth();
+  const Year = xlsxDateInJs.getFullYear();
+
+  return `${Day}/${Month}/${Year}`;
 };
 
 export const searchInDDBBforNHCandDate = (
