@@ -189,6 +189,7 @@ const getScrappingData = async () => {
       console.log("Redirecting to liver page");
 
       await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
+      await frame.waitForNavigation({ waitUntil: "networkidle2" });
     }
   } catch (e) {
     console.error("Not in form search page");
