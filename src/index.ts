@@ -167,17 +167,12 @@ const getScrappingData = async () => {
   const { TEXT_CURRENT_FILTER_PAGE_TYPE, LINK_FILTER_BY_LIVER } =
     INTERFACE_IDS.FILTER_PAGE;
 
-  let formIsLiver = true;
-
-  // frame.$(TEXT_CURRENT_FILTER_PAGE_TYPE).
-  await frame.$eval(TEXT_CURRENT_FILTER_PAGE_TYPE, (el: any, frame) => {
-    if (
-      el.value !==
+  let formIsLiver = await frame.$eval(
+    TEXT_CURRENT_FILTER_PAGE_TYPE,
+    (el: any, frame) =>
+      el.value ===
       "Candidats: Enregistrament de dades > Pacients amb dades de càncer i cirurgia hepàtica"
-    ) {
-      formIsLiver = false;
-    }
-  });
+  );
   if (!formIsLiver)
     await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
 
