@@ -167,20 +167,23 @@ const getScrappingData = async () => {
   const { TEXT_CURRENT_FILTER_PAGE_TYPE, LINK_FILTER_BY_LIVER } =
     INTERFACE_IDS.FILTER_PAGE;
 
-  const headerText = (await frame.$eval(
-    TEXT_CURRENT_FILTER_PAGE_TYPE,
-    (el: any, frame) => {
-      return el.textContent;
-    }
-  )) as string;
-  if (!headerText.includes("hepàtica")) {
-    console.log("Redirecting to liver page");
+  try {
+    const headerText = (await frame.$eval(
+      TEXT_CURRENT_FILTER_PAGE_TYPE,
+      (el: any, frame) => {
+        return el.textContent;
+      }
+    )) as string;
+    if (!headerText.includes("hepàtica")) {
+      console.log("Redirecting to liver page");
 
-    await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
+      await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
+    }
+  } catch (e) {
+    console.error("Not in form search page");
   }
 
   for (let i = 0; i < 1; i++) {
-    continue;
     const currentObservation = ddbbData[i];
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
@@ -222,17 +225,18 @@ const getScrappingData = async () => {
     // const ValueTractamentHepatic = wasIQ ?
 
     // continue;
-
-    if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
-      console.error("somet hing went wrong");
-    }
+    if (false)
+      if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
+        console.error("somet hing went wrong");
+      }
 
     // GO to list item form
     const currentItemId = LINK_LIST_ITEM(i);
-    await Promise.all([
-      frame.$eval(currentItemId, (el: any) => el.click()),
-      frame.waitForNavigation({ waitUntil: "networkidle2" }),
-    ]);
+    if (false)
+      await Promise.all([
+        frame.$eval(currentItemId, (el: any) => el.click()),
+        frame.waitForNavigation({ waitUntil: "networkidle2" }),
+      ]);
 
     // specific code for LIVER
 
@@ -261,6 +265,7 @@ const getScrappingData = async () => {
       DATA_INGRES,
       DATA_ALTA,
       DATA_DIAGNOSTIC,
+      DATA_IQ,
       EDAT_IQ,
       PES_KG,
       TALLA_CM,
@@ -293,13 +298,13 @@ const getScrappingData = async () => {
         DataDiagnosticInOddFormat
       ),
       frame.$eval(
-        DATA_DIAGNOSTIC,
+        DATA_IQ,
         (el: any, value) => (el.value = value),
         DataIQInOddFormat
       ),
       frame.$eval(EDAT_IQ, (el: any, value) => (el.value = value), ValueEdatIQ),
       frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValuePes),
-      frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValueTalla),
+      frame.$eval(TALLA_CM, (el: any, value) => (el.value = value), ValueTalla),
 
       frame.waitForNavigation({ waitUntil: "networkidle2" }),
     ]);
