@@ -267,6 +267,10 @@ const getScrappingData = async () => {
     // }
 
     // START INPUTING DATA
+    console.log("_____________________");
+    console.log("START INPUTING DATA");
+    console.log("_____________________");
+
     const {
       DATA_INGRES,
       DATA_ALTA,
@@ -452,11 +456,90 @@ const getScrappingData = async () => {
       ),
     ]);
 
-    // await pages[0].reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+    await frame.waitForNavigation({ waitUntil: "networkidle2" }); // formulary might change
 
+    // Via access
+
+    const ValueAccessIq = currentObservation[HEADERS_LIVER_DDBB.VIAACCES];
+
+    const Conversio =
+      ValueAccessIq === "Convertida" ||
+      ValueAccessIq === "1er temps (mobilització)";
+    const LapConversioPlanejada =
+      Conversio && ValueAccessIq === "1er temps (mobilització)";
+
+    const ValueViaAccess =
+      !ValueAccessIq || ValueAccessIq === ""
+        ? "NOCONSTA"
+        : LapConversioPlanejada
+        ? "LAPAROSCOPICA_CONV"
+        : Conversio
+        ? "LAPAROSCOPICA"
+        : "OBERTA";
+
+    const _valRCir = currentObservation[HEADERS_LIVER_DDBB.ValRcir] as string;
+    const ValueRadicalitatIQCirugia = _valRCir.includes("R0")
+      ? "R0"
+      : _valRCir.includes("R1")
+      ? "R1"
+      : _valRCir.includes("R2")
+      ? "R2"
+      : "NOCONSTA";
+    const { ACCESS_IQ, CONVERSIO, CONVERSIO_PLANEJADA, RADICALITAT_IQ } =
+      HTML_IDS_LIVER;
+
+    try {
+      await Promise.all([
+        // CHECK VALUES OF ASA WITH EXISTING FORM
+        frame.select(
+          ACCESS_IQ.ID,
+          HTML_IDS_LIVER.ACCESS_IQ.VALUES[ValueViaAccess]
+        ),
+        frame.select(
+          CONVERSIO.ID,
+          HTML_IDS_LIVER.CONVERSIO.VALUES[CONVERSIO ? "SI" : "NO"]
+        ),
+        frame.select(
+          RADICALITAT_IQ.ID,
+          HTML_IDS_LIVER.RADICALITAT_IQ.VALUES[ValueRadicalitatIQCirugia]
+        ),
+      ]);
+    } catch (e) {
+      console.error(
+        "unable to complete promise all for VIA D'ACCES before condition, error message: "
+      );
+      console.error(e);
+    }
+
+    try {
+      await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
+
+      await frame.select(
+        CONVERSIO_PLANEJADA.ID,
+        HTML_IDS_LIVER.CONVERSIO.VALUES[LapConversioPlanejada ? "SI" : "NO"]
+      );
+    } catch (e) {
+      console.error(
+        "unable to complete promise all for VIA D'ACCES after condition, error message: "
+      );
+      console.error(e);
+    }
+
+    // GOBACK METHODS
+    // METHOD 1:
+    // await pages[0].reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
+    // METHOD 2:
     // await goBackFromForm(frame);
     // await goBackFromList(frame);
   }
 };
 
 getScrappingData();
+
+// TODOS:
+/*
+- Add registers for "NO CONSTA" and errors in variables or code: think of reusable code
+
+POTENTIAL UNHANDLED ERRORS:
+- sesion expired while inputing data (Hi ha hagut un problema demanant les dades) 
+*/
