@@ -167,14 +167,17 @@ const getScrappingData = async () => {
   const { TEXT_CURRENT_FILTER_PAGE_TYPE, LINK_FILTER_BY_LIVER } =
     INTERFACE_IDS.FILTER_PAGE;
 
-  let formIsLiver = await frame.$eval(
+  const headerText = (await frame.$eval(
     TEXT_CURRENT_FILTER_PAGE_TYPE,
-    (el: any, frame) =>
-      el.value ===
-      "Candidats: Enregistrament de dades > Pacients amb dades de càncer i cirurgia hepàtica"
-  );
-  if (!formIsLiver)
+    (el: any, frame) => {
+      return el.textContent;
+    }
+  )) as string;
+  if (!headerText.includes("hepàtica")) {
+    console.log("Redirecting to liver page");
+
     await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
+  }
 
   for (let i = 0; i < 1; i++) {
     continue;
