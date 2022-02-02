@@ -463,6 +463,7 @@ const getScrappingData = async () => {
       ]);
 
       console.log("1. gonna wait for navigation");
+      frame.waitForNavigation();
 
       // await frame.waitForNavigation(); // formulary might change
       console.log("1. waited for navigation");
@@ -578,6 +579,31 @@ const getScrappingData = async () => {
           HTML_IDS_LIVER.DIAMETRE_MAJOR_MH,
           (el: any, value) => (el.value = value),
           MHMajorDiam
+        ),
+      ]);
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
+    const numReseccPrev = currentObservation[HEADERS_LIVER_DDBB.RES3]
+      ? "2"
+      : currentObservation[HEADERS_LIVER_DDBB.RES2]
+      ? "1"
+      : "0";
+    const affBilob = currentObservation[HEADERS_LIVER_DDBB.BILOBUL];
+
+    try {
+      await Promise.all([
+        frame.$eval(
+          HTML_IDS_LIVER.NUM_RESECCIONS_H_PREV,
+          (el: any, value) => (el.value = value),
+          numReseccPrev
+        ),
+        frame.select(
+          HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
+          HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
+            affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+          ]
         ),
       ]);
     } catch (e) {
