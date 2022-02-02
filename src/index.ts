@@ -195,6 +195,8 @@ const getScrappingData = async () => {
     console.error("Not in form search page");
   }
 
+  await ShowEditFunctionalities(frame);
+
   for (let i = 0; i < 1; i++) {
     const currentObservation = ddbbData[i];
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
@@ -610,6 +612,80 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
+    const iQSimuTumorPrimary =
+      currentObservation[HEADERS_LIVER_DDBB.CIRSIMCOLON];
+
+    const _tipusReseccioMH = currentObservation[
+      HEADERS_LIVER_DDBB.RESMAY_MEN_ampli
+    ] as string;
+    const tipusReseccioMH = _tipusReseccioMH.includes("ampliada")
+      ? "MAJOR_EXTESA"
+      : _tipusReseccioMH.includes("Major")
+      ? "MAJOR"
+      : _tipusReseccioMH.includes("Menor")
+      ? "MENOR"
+      : "NO_CONSTA";
+
+    const tipusBrisbane = "LLEGIR CASOS DEL TecnicaQuir_descripció";
+
+    try {
+      await Promise.all([
+        frame.select(
+          HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID,
+          HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
+            affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+          ]
+        ),
+        frame.select(
+          HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID,
+          HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
+        ),
+        // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
+        //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
+        //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
+        //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+        //   ]
+        // ),
+      ]);
+      frame.waitForNavigation();
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
+    // const tipusReseccioMH = _tipusReseccioMH.includes("ampliada")
+    //   ? "MAJOR_EXTESA"
+    //   : _tipusReseccioMH.includes("Major")
+    //   ? "MAJOR"
+    //   : _tipusReseccioMH.includes("Menor")
+    //   ? "MENOR"
+    //   : "NO_CONSTA";
+
+    // const tipusBrisbane = "LLEGIR CASOS DEL TecnicaQuir_descripció";
+
+    // try {
+    //   await Promise.all([
+    //     frame.select(
+    //       HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID,
+    //       HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
+    //         affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+    //       ]
+    //     ),
+    //     frame.select(
+    //       HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID,
+    //       HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
+    //     ),
+    //     // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
+    //     //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
+    //     //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
+    //     //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+    //     //   ]
+    //     // ),
+    //   ]);
+    //   frame.waitForNavigation();
+    // } catch (e) {
+    //   console.error("!!!!!!", e);
+    // }
+
     // GOBACK METHODS
     // METHOD 1:
     // await pages[0].reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
@@ -620,6 +696,35 @@ const getScrappingData = async () => {
 };
 
 getScrappingData();
+
+const basicParseID = (noParsedId: string) => {
+  return "#" + noParsedId.replace(":", "\\3A ");
+};
+
+// const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
+//   const elements = await frame.$$('input[type="text"]');
+
+//   elements.forEach(async (el) => {
+//     const properties = await (await el.getProperties()).entries() as Map<any, any>
+//     for (const [key, value] of properties) {
+//       console.log("key is: ", key);
+//       console.log("value is: ", value);
+//     }
+//   });
+//   // console.log("el: ", await GetProperty(el, "innerHTML"));
+
+//   // const elId = await (await el.getProperty("id")).asElement;
+//   // console.log("elId: ", elId);
+
+//   // frame.$eval(elId, (eli) => (eli.value = "nnot"));
+// };
+
+// const GetProperty = async (
+//   element: puppeteer.ElementHandle,
+//   property: string
+// ): Promise<string> => {
+//   return await (await element.getProperty(property)).jsonValue();
+// };
 
 // TODOS:
 /*
