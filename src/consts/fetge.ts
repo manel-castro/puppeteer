@@ -137,7 +137,7 @@ export const HTML_IDS_LIVER = {
       NO_CONSTA: "9",
     },
   },
-  ALPPS: {
+  ALPSS: {
     ID: "form:INPUT_6779_44691_137441",
     VALUES: NOSINOC,
   },

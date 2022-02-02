@@ -195,7 +195,7 @@ const getScrappingData = async () => {
     console.error("Not in form search page");
   }
 
-  await ShowEditFunctionalities(frame);
+  // await ShowEditFunctionalities(frame);
 
   for (let i = 0; i < 1; i++) {
     const currentObservation = ddbbData[i];
@@ -631,13 +631,13 @@ const getScrappingData = async () => {
     try {
       await Promise.all([
         frame.select(
-          HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID,
+          basicParseID(HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID),
           HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
             affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
           ]
         ),
         frame.select(
-          HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID,
+          basicParseID(HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID),
           HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
         ),
         // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
@@ -652,39 +652,49 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
-    // const tipusReseccioMH = _tipusReseccioMH.includes("ampliada")
-    //   ? "MAJOR_EXTESA"
-    //   : _tipusReseccioMH.includes("Major")
-    //   ? "MAJOR"
-    //   : _tipusReseccioMH.includes("Menor")
-    //   ? "MENOR"
-    //   : "NO_CONSTA";
+    try {
+      if (tipusReseccioMH === "MAJOR_EXTESA") {
+        const valueALPSS = currentObservation[HEADERS_LIVER_DDBB.ALPSS];
+        const valueEmbPortal = currentObservation[HEADERS_LIVER_DDBB.EPPO];
+        const valueRadioEmb = "NO";
+        await Promise.all([
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.ALPSS.ID),
+            HTML_IDS_LIVER.ALPSS.VALUES[
+              valueALPSS === "Si"
+                ? "SI"
+                : valueALPSS === "No"
+                ? "NO"
+                : "NOCONSTA"
+            ]
+          ),
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.EMBOLITZACIO_PORTAL_PREOP_MH.ID),
+            HTML_IDS_LIVER.EMBOLITZACIO_PORTAL_PREOP_MH.VALUES[
+              valueEmbPortal === "Si"
+                ? "SI"
+                : valueEmbPortal === "No"
+                ? "NO"
+                : "NOCONSTA"
+            ]
+          ),
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.RADIOEMBOLITZACIO_MH.ID),
+            HTML_IDS_LIVER.RADIOEMBOLITZACIO_MH.VALUES[valueRadioEmb]
+          ),
 
-    // const tipusBrisbane = "LLEGIR CASOS DEL TecnicaQuir_descripció";
-
-    // try {
-    //   await Promise.all([
-    //     frame.select(
-    //       HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID,
-    //       HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
-    //         affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-    //       ]
-    //     ),
-    //     frame.select(
-    //       HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID,
-    //       HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
-    //     ),
-    //     // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
-    //     //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
-    //     //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
-    //     //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-    //     //   ]
-    //     // ),
-    //   ]);
-    //   frame.waitForNavigation();
-    // } catch (e) {
-    //   console.error("!!!!!!", e);
-    // }
+          // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
+          //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
+          //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
+          //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+          //   ]
+          // ),
+        ]);
+        frame.waitForNavigation();
+      }
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
 
     // GOBACK METHODS
     // METHOD 1:
