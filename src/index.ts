@@ -38,7 +38,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/69f0a4d2-9bb1-4bd1-84da-57601ecd67e6",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/aa625e27-21ae-437e-9f56-f22ab6460d4f",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -260,7 +260,7 @@ const getScrappingData = async () => {
         }
       });
 
-      await frame.waitForNavigation({ waitUntil: "networkidle2" });
+      // await frame.waitForNavigation({ waitUntil: "networkidle2" });
     } catch (e) {
       console.error("Tancament registre func error");
       console.error(e);
@@ -327,7 +327,7 @@ const getScrappingData = async () => {
           ValueTalla
         ),
 
-        frame.waitForNavigation({ waitUntil: "networkidle2" }),
+        // frame.waitForNavigation({ waitUntil: "networkidle2" }),
       ]);
     } catch (e) {
       console.error(
@@ -382,6 +382,10 @@ const getScrappingData = async () => {
           HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
         ),
       ]);
+      // console.log("0 gonna wait for navigation");
+
+      // await frame.waitForNavigation({ waitUntil: "networkidle2" });
+      // console.log("0 waited for navigation");
     } catch (e) {
       console.error(
         "unable to complete promise all for CMD data before condition, error message: "
@@ -393,10 +397,10 @@ const getScrappingData = async () => {
 
     if (ValueCMDAbans === "SI") {
       try {
-        await Promise.all([
-          frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
-          frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
-        ]);
+        // await Promise.all([
+        //   frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
+        //   frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
+        // ]);
 
         await Promise.all([
           frame.$eval(
@@ -445,19 +449,26 @@ const getScrappingData = async () => {
         ? "LOCOREGIONAL_AND_QUIRURGIC"
         : "QUIRURGIC_ONLY"; // no data for Locoregional Only, done by Hospitals without resources
 
-    await Promise.all([
-      frame.select(
-        HTML_IDS_LIVER.IND_CIRU_HEP.ID,
-        HTML_IDS_LIVER.IND_CIRU_HEP.VALUES[ValueIndicacioCirugiaHep]
-      ),
+    try {
+      await Promise.all([
+        frame.select(
+          HTML_IDS_LIVER.IND_CIRU_HEP.ID,
+          HTML_IDS_LIVER.IND_CIRU_HEP.VALUES[ValueIndicacioCirugiaHep]
+        ),
 
-      frame.select(
-        HTML_IDS_LIVER.TRACTAMENT_H.ID,
-        HTML_IDS_LIVER.TRACTAMENT_H.VALUES[ValueTractamentHepátic]
-      ),
-    ]);
+        frame.select(
+          HTML_IDS_LIVER.TRACTAMENT_H.ID,
+          HTML_IDS_LIVER.TRACTAMENT_H.VALUES[ValueTractamentHepátic]
+        ),
+      ]);
 
-    await frame.waitForNavigation({ waitUntil: "networkidle2" }); // formulary might change
+      console.log("1. gonna wait for navigation");
+
+      // await frame.waitForNavigation(); // formulary might change
+      console.log("1. waited for navigation");
+    } catch (e) {
+      console.error("____ UNABLE TO SOLVE IND_CIRU_HEP && TRACTAMENT_H ");
+    }
 
     // Via access
 
@@ -465,7 +476,9 @@ const getScrappingData = async () => {
 
     const Conversio =
       ValueAccessIq === "Convertida" ||
-      ValueAccessIq === "1er temps (mobilització)";
+      ValueAccessIq === "1er temps (mobilització)"
+        ? true
+        : false;
     const LapConversioPlanejada =
       Conversio && ValueAccessIq === "1er temps (mobilització)";
 
@@ -489,17 +502,24 @@ const getScrappingData = async () => {
     const { ACCESS_IQ, CONVERSIO, CONVERSIO_PLANEJADA, RADICALITAT_IQ } =
       HTML_IDS_LIVER;
 
+    console.log("start inputing IQ data");
+    console.log("Conversio:", Conversio);
+    console.log("Conversio:", Conversio);
+
     try {
+      // await Promise.all([
+      //   await frame.waitForSelector(CONVERSIO.ID),
+      //   await frame.waitForSelector(ACCESS_IQ.ID),
+      //   await frame.waitForSelector(RADICALITAT_IQ.ID),
+      // ]);
+
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
         frame.select(
           ACCESS_IQ.ID,
           HTML_IDS_LIVER.ACCESS_IQ.VALUES[ValueViaAccess]
         ),
-        frame.select(
-          CONVERSIO.ID,
-          HTML_IDS_LIVER.CONVERSIO.VALUES[CONVERSIO ? "SI" : "NO"]
-        ),
+
         frame.select(
           RADICALITAT_IQ.ID,
           HTML_IDS_LIVER.RADICALITAT_IQ.VALUES[ValueRadicalitatIQCirugia]
@@ -513,12 +533,24 @@ const getScrappingData = async () => {
     }
 
     try {
-      await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
-
       await frame.select(
-        CONVERSIO_PLANEJADA.ID,
-        HTML_IDS_LIVER.CONVERSIO.VALUES[LapConversioPlanejada ? "SI" : "NO"]
+        CONVERSIO.ID,
+        HTML_IDS_LIVER.CONVERSIO.VALUES[Conversio ? "SI" : "NO"]
       );
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
+    console.log("end inputing IQ data");
+    try {
+      if (Conversio) {
+        await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
+
+        await frame.select(
+          CONVERSIO_PLANEJADA.ID,
+          HTML_IDS_LIVER.CONVERSIO.VALUES[LapConversioPlanejada ? "SI" : "NO"]
+        );
+      }
     } catch (e) {
       console.error(
         "unable to complete promise all for VIA D'ACCES after condition, error message: "

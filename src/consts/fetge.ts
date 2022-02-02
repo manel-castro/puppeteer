@@ -77,7 +77,7 @@ export const HTML_IDS_LIVER = {
     },
   },
   CONVERSIO: {
-    ID: "form:INPUT_6779_44691_166798",
+    ID: "#form\\3A INPUT_6779_44691_166798",
     VALUES: NOSINOC,
   },
   CONVERSIO_PLANEJADA: {
