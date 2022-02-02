@@ -544,7 +544,7 @@ const getScrappingData = async () => {
     console.log("end inputing IQ data");
     try {
       if (Conversio) {
-        await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
+        // await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
 
         await frame.select(
           CONVERSIO_PLANEJADA.ID,
@@ -556,6 +556,32 @@ const getScrappingData = async () => {
         "unable to complete promise all for VIA D'ACCES after condition, error message: "
       );
       console.error(e);
+    }
+
+    const numMH = currentObservation[HEADERS_LIVER_DDBB.NMETIMAGpre];
+    const MHMajorDiam = (
+      parseInt(currentObservation[HEADERS_LIVER_DDBB.MIDAMHIMATGE]) * 10
+    ).toString();
+
+    try {
+      await Promise.all([
+        frame.select(
+          HTML_IDS_LIVER.TUMOR_ORIGEN_MH.ID,
+          HTML_IDS_LIVER.TUMOR_ORIGEN_MH.VALUES["CCR"]
+        ),
+        frame.$eval(
+          HTML_IDS_LIVER.NUM_MH_DIAG,
+          (el: any, value) => (el.value = value),
+          numMH
+        ),
+        frame.$eval(
+          HTML_IDS_LIVER.DIAMETRE_MAJOR_MH,
+          (el: any, value) => (el.value = value),
+          MHMajorDiam
+        ),
+      ]);
+    } catch (e) {
+      console.error("!!!!!!", e);
     }
 
     // GOBACK METHODS
