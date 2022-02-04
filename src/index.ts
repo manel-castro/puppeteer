@@ -1,745 +1,454 @@
-import puppeteer from "puppeteer";
-import xlsx, { WorkSheet } from "node-xlsx";
-import fs, { unwatchFile } from "fs";
+import xlsx from "xlsx";
+import fs from "fs";
+import { buildXlsxFile, parseXlsx } from "./excel-functions";
+
+/*
++++ TODOS +++
+
+1. Get all data from distribution tables for MH
+    - Pay attention to: NHC with more than one intervention (name/last name will have a 2 at the end)
+    - If some observation is lost input it manually
+2. Get inputs to understandable way: 
+    - ALL DATES to JS format
+    -  
+3. 
+
+
+** Values that don't exist, ask first why. 
+** Can they be interpolated? 
+
+
+
+*/
+
 import path from "path";
 import { fileURLToPath } from "url";
-import { HEADERS_LIVER_DDBB, TransformXlsxToJSDateFormat } from "./crossExcels";
-
-import { GENERAL_CONSTS, INTERFACE_IDS } from "./consts/general";
-import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
-import { parseXlsx } from "./excel-functions";
 
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const getHeadersObj = (headers) => {
-  const returnObj = {};
+export const parseXlsx2 = (fileName: string, sheetName: string) => {
+  try {
+    const workSheetsFromFile = xlsx.readFile(
+      `${__dirname}/../${fileName}.xlsx`,
+      { cellText: false, cellDates: true }
+    ).Sheets[sheetName];
 
-  headers.forEach((header) => {
-    // Object.assign(returnObj, )
-  });
-  return;
-};
+    const res = xlsx.utils.sheet_to_json(workSheetsFromFile, {
+      dateNF: 'dd"."mm"."yyyy',
 
-type SubmitStates = "LOADED" | "FAILED" | "DISCONNECTED";
-
-const {
-  TEXT_INPUT_FROM_DATE,
-  TEXT_INPUT_TO_DATE,
-  TEXT_INPUT_NHC,
-  BUTTON_EXECUTE_FILTER,
-} = INTERFACE_IDS.FILTER_PAGE;
-const { BUTTON_BACK_LIST, LINK_LIST_ITEM } = INTERFACE_IDS.LIST_PAGE;
-const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
-
-type InterfacePuppeteerSetupRes = {
-  browser: puppeteer.Browser;
-  pages: puppeteer.Page[];
-  frame: puppeteer.Frame;
-};
-
-const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/aa625e27-21ae-437e-9f56-f22ab6460d4f",
-  reload = false
-): Promise<InterfacePuppeteerSetupRes> =>
-  new Promise(async (res, rej) => {
-    const browser = await puppeteer.connect({
-      browserWSEndpoint: wsChromeEndpointurl,
+      blankrows: true,
     });
 
-    // 2nd puppeteer method
-    // const browser = await puppeteer.launch({ headless: false }); // new browser instance
-    // const page = await browser.newPage(); // new page
-    // await page.goto(
-    //   "https://salut.gencat.cat/pls/gsa/gsapkmen.inici?p_aplicacio=RTO&p_usuari=47654431h",
-    //   { waitUntil: "networkidle2" }
-    // );
+    console.log(JSON.stringify(res[0], null, 2));
 
-    const pages = await browser.pages();
-    if (reload)
-      await pages[0].reload({
-        waitUntil: ["networkidle0", "domcontentloaded"],
-      });
-    const currentPage = pages[0];
-
-    await currentPage.bringToFront();
-
-    const frame = await currentPage
-      .frames()
-      .find((f) => f.name() === "aplicacio");
-
-    const puppeteerInstances = {
-      browser,
-      pages,
-      frame,
-    };
-    res(puppeteerInstances);
-  });
-
-const ExecutePuppeteerSearch = (
-  frame: puppeteer.Frame,
-  NHC: string
-): Promise<SubmitStates> =>
-  new Promise(async (res, rej) => {
-    // change to LIVER first
-
-    const DATES = {
-      FROM: "2019",
-      TO: "2020",
-    };
-
-    try {
-      await Promise.all([
-        frame.$eval(
-          TEXT_INPUT_FROM_DATE,
-          (el: any, FROM) => (el.value = FROM),
-          DATES.FROM
-        ),
-        frame.$eval(
-          TEXT_INPUT_TO_DATE,
-          (el: any, TO) => (el.value = TO),
-          DATES.TO
-        ),
-        frame.$eval(TEXT_INPUT_NHC, (el: any, nhc) => (el.value = nhc), NHC),
-      ]);
-    } catch (e) {
-      console.error("Unable to complete form search input data ");
-      console.error(e);
-    }
-
-    // variables must be passed as node env varibles, see:
-    // https://stackoverflow.com/questions/55524329/puppeteer-access-to-outer-scope-variable-fails
-
-    // // SEARCH
-
-    try {
-      await Promise.all([
-        frame.$eval(BUTTON_EXECUTE_FILTER, (el: any) => el.click()),
-        frame.waitForNavigation({ waitUntil: "networkidle2" }),
-      ]);
-    } catch (e) {
-      console.error("Unable to complete form search click search");
-      console.error(e);
-    }
-
-    res("LOADED");
-
-    // await page.waitForSelector("input[name=search]");
-
-    // await page.type('input[name=search]', 'Adenosine triphosphate');
-    // await page.$eval(
-    //   "input[name=search]",
-    //   (el:any) => (el.value = "Adenosine triphosphate")
-    // );
-
-    // await page.type("input[name=search]", "Adenosine triphosphate", {
-    //   delay: 200,
-    // });
-
-    // await page.click('input[type="submit"]');
-    // await page.waitForSelector("#mw-content-text");
-    // const text = await page.evaluate(() => {
-    //   const anchor = document.querySelector("#mw-content-text");
-    //   return anchor.textContent;
-    // });
-    // await page.screenshot("png", "test1.png");
-    //   await page.pdf({ path: "hn.pdf", format: "a4" });
-
-    // console.log(text);
-    //   await browser.close();
-  });
-
-// // GOBACK FROM LIST
-const goBackFromList = async (frame: puppeteer.Frame) => {
-  await Promise.all([
-    frame.waitForSelector(BUTTON_BACK_LIST),
-    frame.$eval(BUTTON_BACK_LIST, (el: any) => el.click()),
-    frame.waitForNavigation({ waitUntil: "networkidle2" }),
-  ]);
-};
-
-const goBackFromForm = async (frame: puppeteer.Frame) => {
-  await Promise.all([
-    frame.waitForSelector(BUTTON_BACK_FORM),
-    frame.$eval(BUTTON_BACK_FORM, (el: any) => el.click()),
-    frame.waitForNavigation({ waitUntil: "networkidle2" }),
-  ]);
-};
-
-const getScrappingData = async () => {
-  const ddbbData = await parseXlsx("output/crossedData");
-  const HEADERS = ddbbData.shift();
-
-  // - check if name and lastnames are equal to ddbb
-  // - check if Register is closed
-  // - in case it's closed uncheck it
-
-  const { browser, pages, frame } = await getInterfacePuppeteerSetup();
-
-  const { TEXT_CURRENT_FILTER_PAGE_TYPE, LINK_FILTER_BY_LIVER } =
-    INTERFACE_IDS.FILTER_PAGE;
-
-  try {
-    const headerText = (await frame.$eval(
-      TEXT_CURRENT_FILTER_PAGE_TYPE,
-      (el: any, frame) => {
-        return el.textContent;
-      }
-    )) as string;
-    if (!headerText.includes("hepàtica")) {
-      console.log("Redirecting to liver page");
-
-      await frame.$eval(LINK_FILTER_BY_LIVER, (ele: any) => ele.click());
-      await frame.waitForNavigation({ waitUntil: "networkidle2" });
-    }
+    return res;
   } catch (e) {
-    console.error("Not in form search page");
+    return e;
   }
+  // console.log(workSheetsFromFile.data[1]);
 
-  // await ShowEditFunctionalities(frame);
+  // write the same file
+};
 
-  for (let i = 0; i < 1; i++) {
-    const currentObservation = ddbbData[i];
-    const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
+// export const buildXlsxFile2 = (filename: string, data: any[][]) => {
+//   const buffer = xlsx.build([{ name: filename, data } as WorkSheet]);
+//   const writeStream = fs.createWriteStream(
+//     `${__dirname}/../output/${filename}.xlsx`
+//   );
+//   writeStream.write(buffer);
+//   writeStream.close();
+// };
 
-    const ValueDataIngres = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
-    const ValueDataDiagnostic = (
-      parseInt(ValueDataIngres) -
-      (Math.random() * (10 - 5) + 5)
-    ).toString(); // !!
-    const ValueDataAlta = (
-      parseInt(ValueDataIngres) +
-      parseInt(currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0")
-    ) // !! estada not always defined
-      .toString();
+export const addDaysTo1Jan1900 = (days: number) => {
+  // used for computing xlsx days
 
-    const ValueDataIQ = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
-    const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
-    const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES]; //??
-    const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla]; //??
-    const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
-    const ValueEcog = "NO-VALORAT"; //??
-    const ValueEras = "NO"; //??
+  const date = new Date(1900, 0, 0);
+  date.setDate(date.getDate() + days);
+  return date;
+};
 
-    // const ValueTractamentHepatic = wasIQ ?
+export const getJsFormatFromOddDate = (dateOddFormat: string) => {
+  // dateOddFormat of type: dd/mm/yy
+  const dayMonthYear = dateOddFormat.split("/");
+  const day = parseInt(dayMonthYear[0]) + 1;
+  const month = parseInt(dayMonthYear[1]) - 1;
+  const year = parseInt(dayMonthYear[2]);
+  return new Date(year, month, day);
+};
 
+export const TransformJSToXlsxDateFormat = (dateJSFormat: Date) => {
+  const dateXlsxReference = new Date(1900, 0, 0);
+  const differenceInTime = dateJSFormat.getTime() - dateXlsxReference.getTime();
+  const daysFrom1900 = differenceInTime / (1000 * 3600 * 24);
+  return Math.round(daysFrom1900);
+};
+
+export const TransformXlsxToJSDateFormat = (xlsxDate: number | string) => {
+  if (typeof xlsxDate === "string") xlsxDate = parseInt(xlsxDate);
+
+  const xlsxDateInJs = addDaysTo1Jan1900(xlsxDate);
+
+  const Day = xlsxDateInJs.getDay();
+  const Month = xlsxDateInJs.getMonth();
+  const Year = xlsxDateInJs.getFullYear();
+
+  return `${Day}/${Month}/${Year}`;
+};
+
+export const searchInDDBBforNHCandDate = (
+  ddbbData: any[],
+  nhc: string,
+  data: Date
+) => {
+  const dateToFind = TransformJSToXlsxDateFormat(data);
+
+  for (let j = 0; j < ddbbData.length; j++) {
+    const currentDdbbRow = ddbbData[j];
+
+    const ddbbDataHep = currentDdbbRow[HEADERS_LIVER_DDBB.DATAHEP];
+    const ddbbDataNHC = currentDdbbRow[HEADERS_LIVER_DDBB.SAP];
+
+    if (ddbbDataNHC === nhc) {
+      if (ddbbDataHep == dateToFind) {
+        return currentDdbbRow;
+      }
+    }
+
+    // if (dddbbLAST1 === filteredLAST1) {
+    //   // console.log("currentDDBBROW: ", currentDdbbRow);
+
+    //   occurrences.push(currentDdbbRow);
+    // }
+  }
+};
+
+(async () => {
+  // get all DDBB data
+  const ddbbData = await parseXlsx2(
+    "assets/dataPlaOnco2019-2020",
+    "PlaOnco2019-2020"
+  );
+
+  // get filtered data
+  const filteredData = await parseXlsx2("assets/MH_FETGE", "Sheet1");
+
+  // // days after January 0, 1900
+  // ddbbData.forEach((item) => {
+  //   const dataHepInXlsx = item[headersDdbb.DATAHEP];
+
+  //   const date = addDaysTo1Jan1900(dataHepInXlsx);
+  //   console.log(date);
+  // });
+
+  // console.log(filteredData.map((item) => item[headerFilteredData.NHC]));
+  // console.log(ddbbData.map((item) => item[headersDdbb.SAP]));
+
+  // console.log(filteredData.length);
+
+  // const regExp = new RegExp("[0-9]");
+  // const test = "ñalskjfd 10/02/21";
+
+  // const matchIndex = test.match(regExp).index;
+
+  // // data format on ddbb 03-Jul-20
+
+  // const data = test.slice(matchIndex, test.length);
+
+  // console.log(data.slice(data.length - 2, data.length));
+  // console.log(data);
+
+  const crossedArray = [];
+  const crossedArraySAP = [];
+
+  // for (let i = 0; i < ddbbData.length; i++) {
+  //   const currentDdbbRow = ddbbData[i];
+  //   if (currentDdbbRow[headersDdbb.SAP] == "251947") console.log("occurrence");
+  // }
+  // console.log("next");
+
+  // Seems like SAP / NHC numbers are not crossing right. Check DDBB.
+  // Try to parse by LAST1 in case occurrences > 1 keep crossing > Last2 and > Name
+
+  // const NHCSfiltered = [];
+  // const NHCSddbb = [];
+  // for (let i = 0; i < filteredData.length; i++) {
+  //   const currentFilteredRow = filteredData[i];
+  //   const filteredNHC = currentFilteredRow[headerFilteredData.NHC];
+
+  //   NHCSfiltered.push(filteredNHC);
+  // }
+
+  // for (let j = 0; j < ddbbData.length; j++) {
+  //   const currentDdbbRow = ddbbData[j];
+
+  //   const ddbbDataNHC = currentDdbbRow[headersDdbb.SAP];
+  //   NHCSddbb.push(ddbbDataNHC);
+  // }
+  // console.log("NHCSfiltered", NHCSfiltered.length);
+  // console.log("NHCSddbb", NHCSddbb.length);
+
+  for (let i = 0; i < filteredData.length; i++) {
     // continue;
-    // if (false)
-    if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
-      console.error("somet hing went wrong");
+    const currentFilteredRow = filteredData[i];
+    const filteredNHC = currentFilteredRow[headerFilteredData.NHC];
+    // const filteredLAST1 = currentFilteredRow[headerFilteredData.LAST1];
+    // const filteredLAST2 = currentFilteredRow[headerFilteredData.LAST2];
+
+    let occurrencesSAP = [];
+    const _tempOcurrenceFilteredSAP = []; // used in case more than one occurrence
+    const exactConicidence = [];
+    for (let j = 0; j < ddbbData.length; j++) {
+      const currentDdbbRow = ddbbData[j];
+
+      const ddbbDataNHC = currentDdbbRow[HEADERS_LIVER_DDBB.SAP];
+      const dddbbLAST1 = currentDdbbRow[HEADERS_LIVER_DDBB.APELLIDO1];
+
+      if (ddbbDataNHC === filteredNHC) {
+        occurrencesSAP.push(currentDdbbRow);
+        _tempOcurrenceFilteredSAP.push(currentFilteredRow);
+      }
+      // if (dddbbLAST1 === filteredLAST1) {
+      //   // console.log("currentDDBBROW: ", currentDdbbRow);
+
+      //   occurrences.push(currentDdbbRow);
+      // }
     }
 
-    // GO to list item form
-    const currentItemId = LINK_LIST_ITEM(i);
-    // if (false)
-    try {
-      await Promise.all([
-        frame.$eval(currentItemId, (el: any) => el.click()),
-        frame.waitForNavigation({ waitUntil: "networkidle2" }),
-      ]);
-    } catch (e) {
-      console.error("Unable to complete click list link");
-      console.error(e);
-    }
+    if (occurrencesSAP.length > 1) {
+      for (let x = 0; x < occurrencesSAP.length; x++) {
+        const ocurrencesRow = occurrencesSAP[x];
+        const _tempOcurrenceFilteredSAPRow = _tempOcurrenceFilteredSAP[x];
 
-    // specific code for LIVER
+        // CASUISTIC 1: IT IS DUPLICATED IN FILTERED DATA
+        const _tempOccFilteredComment = _tempOcurrenceFilteredSAPRow[
+          headerFilteredData.COMMENT
+        ] as string;
 
-    /* TODOS: 
-    // 1. GET ALL VARIABLES FROM EXCEL FIRST AND IF ANY IS MISSING:
-        1.A. ADD TO ARRAY WITH THIS ROW
-        1.B. OMIT CURRENT PUPPETEER REGISTER AND GO BACK TO FILTER SCREEN
-        1.C. ADD ALL THOSE OBSERVATIONS TO A EXCEL
-        *** WHILE DOING ALGORITHM TEST IT WITHOUT PUPPETEER
+        console.log(
+          "NOM ",
+          _tempOcurrenceFilteredSAPRow[headerFilteredData.NAME],
+          "NHC ",
+          _tempOcurrenceFilteredSAPRow[headerFilteredData.NHC],
+          " got: ",
+          _tempOccFilteredComment
+        );
 
+        const regExp = new RegExp("[0-9]");
 
-     */
+        const matchIndex = _tempOccFilteredComment.match(regExp)?.index;
 
-    // if (false) {
-    try {
-      const IsFormClosed_ID = HTML_IDS_LIVER.TANCAMENT_REGISTRE_DADES;
-      await frame.$eval(IsFormClosed_ID, (el: any) => {
-        if (el.value === "true") {
-          el.click();
+        // data format on ddbb 03-Jul-20
+
+        if (!matchIndex) {
+          console.log("happened !matchIndex");
+          console.log(
+            "NOM ",
+            _tempOcurrenceFilteredSAPRow[headerFilteredData.NAME],
+            "NHC ",
+            _tempOcurrenceFilteredSAPRow[headerFilteredData.NHC],
+            " got: ",
+            _tempOccFilteredComment
+          );
+
+          crossedArraySAP.push(ocurrencesRow);
+          console.log("occurrencesSap before: ", occurrencesSAP);
+
+          console.log("x is: ", x);
+
+          occurrencesSAP.splice(x, 1);
+          console.log("occurrencesSap after: ", occurrencesSAP);
+          continue;
         }
-      });
-
-      // await frame.waitForNavigation({ waitUntil: "networkidle2" });
-    } catch (e) {
-      console.error("Tancament registre func error");
-      console.error(e);
-    }
-    // }
-
-    // START INPUTING DATA
-    console.log("_____________________");
-    console.log("START INPUTING DATA");
-    console.log("_____________________");
-
-    const {
-      DATA_INGRES,
-      DATA_ALTA,
-      DATA_DIAGNOSTIC,
-      DATA_IQ,
-      EDAT_IQ,
-      PES_KG,
-      TALLA_CM,
-    } = HTML_IDS_LIVER;
-
-    const DataIngresInOddFormat = TransformXlsxToJSDateFormat(ValueDataIngres);
-
-    const DataAltaInOddFormat = TransformXlsxToJSDateFormat(ValueDataAlta);
-
-    const DataDiagnosticInOddFormat =
-      TransformXlsxToJSDateFormat(ValueDataDiagnostic);
-
-    const DataIQInOddFormat = TransformXlsxToJSDateFormat(ValueDataIQ);
-    // if (false)
-
-    try {
-      await Promise.all([
-        // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.$eval(
-          DATA_INGRES,
-          (el: any, value) => (el.value = value),
-          DataIngresInOddFormat
-        ),
-        frame.$eval(
-          DATA_ALTA,
-          (el: any, value) => (el.value = value),
-          DataAltaInOddFormat
-        ),
-        frame.$eval(
-          DATA_DIAGNOSTIC,
-          (el: any, value) => (el.value = value),
-          DataDiagnosticInOddFormat
-        ),
-        frame.$eval(
-          DATA_IQ,
-          (el: any, value) => (el.value = value),
-          DataIQInOddFormat
-        ),
-        frame.$eval(
-          EDAT_IQ,
-          (el: any, value) => (el.value = value),
-          ValueEdatIQ
-        ),
-        frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValuePes),
-        frame.$eval(
-          TALLA_CM,
-          (el: any, value) => (el.value = value),
-          ValueTalla
-        ),
-
-        // frame.waitForNavigation({ waitUntil: "networkidle2" }),
-      ]);
-    } catch (e) {
-      console.error(
-        "unable to complete promise all for general input data, error message: "
-      );
-      console.error(e);
-    }
-
-    const { ASA, ECOG, ERAS } = HTML_IDS_LIVER;
-
-    // if (false)
-    try {
-      await Promise.all([
-        // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.select(ASA.ID, ASA.VALUES[ValueASA]),
-        frame.select(ECOG.ID, ECOG.VALUES[ValueEcog]),
-        frame.select(ERAS.ID, ERAS.VALUES[ValueEras]),
-        // frame.waitForNavigation({ waitUntil: "networkidle2" }),
-      ]);
-    } catch (e) {
-      console.error(
-        "unable to complete promise all for general ASA/ECOG/ERAS data, error message: "
-      );
-      console.error(e);
-    }
-    const ValueCMDAbans =
-      currentObservation[HEADERS_LIVER_DDBB.COMITE]?.toUpperCase() ||
-      "NOCONSTA";
-
-    console.log("ValueCMDAbans: ", ValueCMDAbans);
-
-    const ValueCMDInforme = ValueCMDAbans;
-    const ValueCMDAbansData = ValueCMDAbans
-      ? (
-          parseInt(ValueDataIngres) -
-          (Math.random() * (60 - 50) + 50)
-        ).toString()
-      : ""; // !!  2 months before aprox
-    const ValueCMDAfter = "NOCONSTA"; // !!
-
-    const ValueTipusCirugHepatica = "MTHs";
-    try {
-      await Promise.all([
-        // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.select(
-          HTML_IDS_LIVER.CMD_ABANS.ID,
-          HTML_IDS_LIVER.CMD_ABANS.VALUES[ValueCMDAbans]
-        ),
-
-        frame.select(
-          HTML_IDS_LIVER.CMD_DESPRES.ID,
-          HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
-        ),
-      ]);
-      // console.log("0 gonna wait for navigation");
-
-      // await frame.waitForNavigation({ waitUntil: "networkidle2" });
-      // console.log("0 waited for navigation");
-    } catch (e) {
-      console.error(
-        "unable to complete promise all for CMD data before condition, error message: "
-      );
-      console.error(e);
-    }
-
-    //____TODO: TEST THIS CONDITION____
-
-    if (ValueCMDAbans === "SI") {
-      try {
-        // await Promise.all([
-        //   frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
-        //   frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
-        // ]);
-
-        await Promise.all([
-          frame.$eval(
-            HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
-            (el: any) => (el.value = ValueCMDAbansData)
-          ),
-          frame.select(
-            HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
-            HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
-          ),
-        ]);
-      } catch (e) {
-        console.error(
-          "unable to complete promise all for CMD data after condition CMD = true, error message: "
+        const data = _tempOccFilteredComment.slice(
+          matchIndex,
+          _tempOccFilteredComment.length
         );
-        console.error(e);
+        // console.log("data is: ", data);
+
+        // checking malformatted data: works right
+        if (data.includes(" y ")) {
+          const [data1, data2] = data.split(" y ");
+
+          const daysJSFormatDate1 = getJsFormatFromOddDate(data1);
+          const MultipleYVal1 = searchInDDBBforNHCandDate(
+            occurrencesSAP,
+            filteredNHC,
+            daysJSFormatDate1
+          );
+          const daysJSFormatDate2 = getJsFormatFromOddDate(data2);
+          const MultipleYVal2 = searchInDDBBforNHCandDate(
+            occurrencesSAP,
+            filteredNHC,
+            daysJSFormatDate2
+          );
+
+          if (MultipleYVal1) crossedArraySAP.push(MultipleYVal1);
+          if (MultipleYVal2) crossedArraySAP.push(MultipleYVal2);
+
+          // occurrencesSAP.slice(x, 1);
+
+          x = occurrencesSAP.length;
+          occurrencesSAP = [];
+          continue;
+
+          // --- Check values are right
+          // console.log("date1", TransformJSToXlsxDateFormat(daysJSFormatDate1));
+
+          // console.log("foundValue1", foundValue1);
+          // console.log("date2", TransformJSToXlsxDateFormat(daysJSFormatDate2));
+          // console.log("foundValue2", foundValue2);
+        }
+
+        // one specific observation is bad formatted and both dates are specified on other date
+        if (data.includes(")")) {
+          crossedArraySAP.push(ocurrencesRow);
+          occurrencesSAP.splice(x, 1);
+          continue;
+        }
+
+        const JSData = getJsFormatFromOddDate(data);
+        const dataDownwardsThereshold = new Date(2019, 0, 1);
+        const dataUpwardsThereshold = new Date(2020, 11, 31);
+
+        // filter out of year variables
+        if (
+          JSData.getTime() > dataDownwardsThereshold.getTime() ||
+          JSData.getTime() < dataUpwardsThereshold.getTime()
+        ) {
+          // console.log("happened out of range");
+          // console.log(
+          //   `occurrencesBefore on index ${x}: ${occurrencesSAP.length}`
+          // );
+          console.log("out of date, date: ", JSData);
+
+          occurrencesSAP.splice(x, 1); // check if it works
+          continue;
+          // console.log(
+          //   `occurrences after on index ${x}: ${occurrencesSAP.length}`
+          // );
+          // x = occurrencesSAP.length;
+          console.log("odd case: ", ocurrencesRow);
+        }
+
+        // data (format dd/mm/yy) === DATAHEP (format days from 1/1/1900)
+        // const dataHepFromFilteredComment =
+
+        // get xlsx data in JS format
+        // const dataHepInXlsx = item[headersDdbb.DATAHEP];
+
+        // const dataHepJSFormat = addDaysTo1Jan1900(dataHepInXlsx);
+
+        // if(dataHepJSFormat === )
+
+        // CASUISTIC 2: IT IS DUPLICATED IN DDBB (NAME AND LAST NAMES HAVE A 2)
+
+        // const occurrenceLAST2 = ocurrencesRow[headersDdbb.APELLIDO2];
+        // if (occurrenceLAST2 === filteredLAST2) {
+        //   occurrences.filter(
+        //     (occurrence) => occurrence[headersDdbb.APELLIDO2] !== filteredLAST2
+        //   );
+        // }
+        // console.log(currentDdbbRow);
       }
     }
 
-    const ValueIndicacioCirugiaHep = "MH";
-
-    // await frame.waitForNavigation({ waitUntil: "networkidle2" });
-
-    // Tractament hepatic (técnica)
-    const ValueTecnica = (
-      currentObservation[HEADERS_LIVER_DDBB.TECNICA] as string
-    ).toLowerCase();
-    const ValueRadio = currentObservation[HEADERS_LIVER_DDBB.RF];
-    const ValueMW = currentObservation[HEADERS_LIVER_DDBB.mw];
-
-    const wasIQ = ValueTecnica && ValueTecnica !== ""; // sometimes fail: check inference from other variables
-
-    //   VALUES: {
-    //     QUIRURGIC_ONLY: string;
-    //     LOCOREGIONAL_ONLY: string;
-    //     LOCOREGIONAL_AND_QUIRURGIC: string;
-    // }
-
-    const tecnicaIsQuirurgicUnicament =
-      wasIQ &&
-      ValueTecnica.includes("hepatectomia major") &&
-      ValueTecnica.includes("resecció");
-
-    const ValueTractamentHepátic =
-      tecnicaIsQuirurgicUnicament && (ValueRadio || ValueMW)
-        ? "LOCOREGIONAL_AND_QUIRURGIC"
-        : "QUIRURGIC_ONLY"; // no data for Locoregional Only, done by Hospitals without resources
-
-    try {
-      await Promise.all([
-        frame.select(
-          HTML_IDS_LIVER.IND_CIRU_HEP.ID,
-          HTML_IDS_LIVER.IND_CIRU_HEP.VALUES[ValueIndicacioCirugiaHep]
-        ),
-
-        frame.select(
-          HTML_IDS_LIVER.TRACTAMENT_H.ID,
-          HTML_IDS_LIVER.TRACTAMENT_H.VALUES[ValueTractamentHepátic]
-        ),
-      ]);
-
-      console.log("1. gonna wait for navigation");
-      frame.waitForNavigation();
-
-      // await frame.waitForNavigation(); // formulary might change
-      console.log("1. waited for navigation");
-    } catch (e) {
-      console.error("____ UNABLE TO SOLVE IND_CIRU_HEP && TRACTAMENT_H ");
-    }
-
-    // Via access
-
-    const ValueAccessIq = currentObservation[HEADERS_LIVER_DDBB.VIAACCES];
-
-    const Conversio =
-      ValueAccessIq === "Convertida" ||
-      ValueAccessIq === "1er temps (mobilització)"
-        ? true
-        : false;
-    const LapConversioPlanejada =
-      Conversio && ValueAccessIq === "1er temps (mobilització)";
-
-    const ValueViaAccess =
-      !ValueAccessIq || ValueAccessIq === ""
-        ? "NOCONSTA"
-        : LapConversioPlanejada
-        ? "LAPAROSCOPICA_CONV"
-        : Conversio
-        ? "LAPAROSCOPICA"
-        : "OBERTA";
-
-    const _valRCir = currentObservation[HEADERS_LIVER_DDBB.ValRcir] as string;
-    const ValueRadicalitatIQCirugia = _valRCir.includes("R0")
-      ? "R0"
-      : _valRCir.includes("R1")
-      ? "R1"
-      : _valRCir.includes("R2")
-      ? "R2"
-      : "NOCONSTA";
-    const { ACCESS_IQ, CONVERSIO, CONVERSIO_PLANEJADA, RADICALITAT_IQ } =
-      HTML_IDS_LIVER;
-
-    console.log("start inputing IQ data");
-    console.log("Conversio:", Conversio);
-    console.log("Conversio:", Conversio);
-
-    try {
-      // await Promise.all([
-      //   await frame.waitForSelector(CONVERSIO.ID),
-      //   await frame.waitForSelector(ACCESS_IQ.ID),
-      //   await frame.waitForSelector(RADICALITAT_IQ.ID),
-      // ]);
-
-      await Promise.all([
-        // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.select(
-          ACCESS_IQ.ID,
-          HTML_IDS_LIVER.ACCESS_IQ.VALUES[ValueViaAccess]
-        ),
-
-        frame.select(
-          RADICALITAT_IQ.ID,
-          HTML_IDS_LIVER.RADICALITAT_IQ.VALUES[ValueRadicalitatIQCirugia]
-        ),
-      ]);
-    } catch (e) {
+    if (occurrencesSAP.length === 1) {
+      crossedArraySAP.push(occurrencesSAP[0]);
+    } else if (occurrencesSAP.length === 0) {
+    } else {
       console.error(
-        "unable to complete promise all for VIA D'ACCES before condition, error message: "
+        "More than one occurrence left when pushing to crossed array"
       );
-      console.error(e);
-    }
-
-    try {
-      await frame.select(
-        CONVERSIO.ID,
-        HTML_IDS_LIVER.CONVERSIO.VALUES[Conversio ? "SI" : "NO"]
+      throw new Error(
+        "More than one occurrence left when pushing to crossed array"
       );
-    } catch (e) {
-      console.error("!!!!!!", e);
     }
-
-    console.log("end inputing IQ data");
-    try {
-      if (Conversio) {
-        // await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
-
-        await frame.select(
-          CONVERSIO_PLANEJADA.ID,
-          HTML_IDS_LIVER.CONVERSIO.VALUES[LapConversioPlanejada ? "SI" : "NO"]
-        );
-      }
-    } catch (e) {
-      console.error(
-        "unable to complete promise all for VIA D'ACCES after condition, error message: "
-      );
-      console.error(e);
-    }
-
-    const numMH = currentObservation[HEADERS_LIVER_DDBB.NMETIMAGpre];
-    const MHMajorDiam = (
-      parseInt(currentObservation[HEADERS_LIVER_DDBB.MIDAMHIMATGE]) * 10
-    ).toString();
-
-    try {
-      await Promise.all([
-        frame.select(
-          HTML_IDS_LIVER.TUMOR_ORIGEN_MH.ID,
-          HTML_IDS_LIVER.TUMOR_ORIGEN_MH.VALUES["CCR"]
-        ),
-        frame.$eval(
-          HTML_IDS_LIVER.NUM_MH_DIAG,
-          (el: any, value) => (el.value = value),
-          numMH
-        ),
-        frame.$eval(
-          HTML_IDS_LIVER.DIAMETRE_MAJOR_MH,
-          (el: any, value) => (el.value = value),
-          MHMajorDiam
-        ),
-      ]);
-    } catch (e) {
-      console.error("!!!!!!", e);
-    }
-
-    const numReseccPrev = currentObservation[HEADERS_LIVER_DDBB.RES3]
-      ? "2"
-      : currentObservation[HEADERS_LIVER_DDBB.RES2]
-      ? "1"
-      : "0";
-    const affBilob = currentObservation[HEADERS_LIVER_DDBB.BILOBUL];
-
-    try {
-      await Promise.all([
-        frame.$eval(
-          HTML_IDS_LIVER.NUM_RESECCIONS_H_PREV,
-          (el: any, value) => (el.value = value),
-          numReseccPrev
-        ),
-        frame.select(
-          HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
-          HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
-            affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-          ]
-        ),
-      ]);
-    } catch (e) {
-      console.error("!!!!!!", e);
-    }
-
-    const iQSimuTumorPrimary =
-      currentObservation[HEADERS_LIVER_DDBB.CIRSIMCOLON];
-
-    const _tipusReseccioMH = currentObservation[
-      HEADERS_LIVER_DDBB.RESMAY_MEN_ampli
-    ] as string;
-    const tipusReseccioMH = _tipusReseccioMH.includes("ampliada")
-      ? "MAJOR_EXTESA"
-      : _tipusReseccioMH.includes("Major")
-      ? "MAJOR"
-      : _tipusReseccioMH.includes("Menor")
-      ? "MENOR"
-      : "NO_CONSTA";
-
-    const tipusBrisbane = "LLEGIR CASOS DEL TecnicaQuir_descripció";
-
-    try {
-      await Promise.all([
-        frame.select(
-          basicParseID(HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID),
-          HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
-            affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-          ]
-        ),
-        frame.select(
-          basicParseID(HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID),
-          HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
-        ),
-        // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
-        //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
-        //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
-        //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-        //   ]
-        // ),
-      ]);
-      frame.waitForNavigation();
-    } catch (e) {
-      console.error("!!!!!!", e);
-    }
-
-    try {
-      if (tipusReseccioMH === "MAJOR_EXTESA") {
-        const valueALPSS = currentObservation[HEADERS_LIVER_DDBB.ALPSS];
-        const valueEmbPortal = currentObservation[HEADERS_LIVER_DDBB.EPPO];
-        const valueRadioEmb = "NO";
-        await Promise.all([
-          frame.select(
-            basicParseID(HTML_IDS_LIVER.ALPSS.ID),
-            HTML_IDS_LIVER.ALPSS.VALUES[
-              valueALPSS === "Si"
-                ? "SI"
-                : valueALPSS === "No"
-                ? "NO"
-                : "NOCONSTA"
-            ]
-          ),
-          frame.select(
-            basicParseID(HTML_IDS_LIVER.EMBOLITZACIO_PORTAL_PREOP_MH.ID),
-            HTML_IDS_LIVER.EMBOLITZACIO_PORTAL_PREOP_MH.VALUES[
-              valueEmbPortal === "Si"
-                ? "SI"
-                : valueEmbPortal === "No"
-                ? "NO"
-                : "NOCONSTA"
-            ]
-          ),
-          frame.select(
-            basicParseID(HTML_IDS_LIVER.RADIOEMBOLITZACIO_MH.ID),
-            HTML_IDS_LIVER.RADIOEMBOLITZACIO_MH.VALUES[valueRadioEmb]
-          ),
-
-          // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
-          //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
-          //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
-          //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-          //   ]
-          // ),
-        ]);
-        frame.waitForNavigation();
-      }
-    } catch (e) {
-      console.error("!!!!!!", e);
-    }
-
-    // GOBACK METHODS
-    // METHOD 1:
-    // await pages[0].reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
-    // METHOD 2:
-    // await goBackFromForm(frame);
-    // await goBackFromList(frame);
   }
+
+  // console.log(crossedArraySAP);
+
+  // const data = [
+  //   [1, 2, 3],
+  //   [true, false, null, "sheetjs"],
+  //   ["foo", "bar", new Date("2014-02-19T14:30Z"), "0.3"],
+  //   ["baz", null, "qux"],
+  // ];
+  crossedArraySAP.unshift(ddbbData[0]);
+  buildXlsxFile("crossedData2", crossedArraySAP);
+  // console.log(.length);
+  // console.log(JSON.stringify(crossedArray, null, 2));
+
+  // filteredData;
+
+  //   const relevantData = ddbbData.filter(item => item)
+})();
+
+const headerFilteredData = {
+  NHC: 0,
+  NAME: 1,
+  LAST1: 2,
+  LAST2: 3,
+  TYPE: 4,
+  COMMENT: 5,
 };
 
-getScrappingData();
-
-const basicParseID = (noParsedId: string) => {
-  return "#" + noParsedId.replace(":", "\\3A ");
+export const HEADERS_LIVER_DDBB = {
+  TECNICA: "TECNICA",
+  NUM_RESEC: "NUM_RESEC",
+  NUM_PAC: "NUM_PAC",
+  NOMBRE: "NOMBRE",
+  APELLIDO1: "APELLIDO1",
+  APELLIDO2: "APELLIDO2",
+  SAP: "SAP",
+  COMITE: "COMITE",
+  SEXO: "SEXO",
+  EDAT: "EDAT",
+  PES: "PES",
+  Talla: "Talla",
+  IMC: "IMC",
+  ASA: "ASA",
+  DATAIQCOLON: "DATAIQCOLON",
+  EPPO: "EPPO",
+  DATAHEP: 16,
+  ESTADA: 17,
+  RESMAY_MEN_ampli: 18,
+  TecnicaQuir_descripció: 19,
+  VIAACCES: 20,
+  RF: 21,
+  mw: 22,
+  ValRcir: 23,
+  NMETIMAGpre: 24,
+  MIDAMHIMATGE: 25,
+  BILOBUL: 26,
+  RES2: 27,
+  RES3: 28,
+  CIRSIMCOLON: 29,
+  TIPUSCIRSIMCOL: 30,
+  TIPUSCIRCOLONSIM: 31,
+  MORBIDITAT: 32,
+  GRAUCLAVIEN: 33,
+  CCIndex: 34,
+  NMETAP: 35,
+  MIDAAP: 36,
+  MARGEN: 37,
+  INVMARG: 38,
+  TRATMARGE: 39,
+  DATAULTCONT: 40,
+  ALPSS: 41,
+  INSUFHEPisgls: 42,
+  ESTAT: 43,
+  FISTBILI: 44,
+  GrauIH: 45,
+  INFESPAI: 46,
+  HEMOPER: 47,
+  ASCITIS: 48,
+  REIQ: 49,
+  GRAUFB: 50,
+  MORTALITAT: 51,
+  CausaREIQ: 52,
+  RECIDIVA: 53,
+  RECHEP: 54,
+  RECPUL: 55,
+  DataEXITUS: 56,
 };
-
-// const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
-//   const elements = await frame.$$('input[type="text"]');
-
-//   elements.forEach(async (el) => {
-//     const properties = await (await el.getProperties()).entries() as Map<any, any>
-//     for (const [key, value] of properties) {
-//       console.log("key is: ", key);
-//       console.log("value is: ", value);
-//     }
-//   });
-//   // console.log("el: ", await GetProperty(el, "innerHTML"));
-
-//   // const elId = await (await el.getProperty("id")).asElement;
-//   // console.log("elId: ", elId);
-
-//   // frame.$eval(elId, (eli) => (eli.value = "nnot"));
-// };
-
-// const GetProperty = async (
-//   element: puppeteer.ElementHandle,
-//   property: string
-// ): Promise<string> => {
-//   return await (await element.getProperty(property)).jsonValue();
-// };
-
-// TODOS:
-/*
-- Add registers for "NO CONSTA" and errors in variables or code: think of reusable code
-
-POTENTIAL UNHANDLED ERRORS:
-- sesion expired while inputing data (Hi ha hagut un problema demanant les dades) 
-*/
