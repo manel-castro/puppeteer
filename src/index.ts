@@ -374,8 +374,10 @@ export const searchInDDBBforNHCandDate = (
   //   ["foo", "bar", new Date("2014-02-19T14:30Z"), "0.3"],
   //   ["baz", null, "qux"],
   // ];
-  crossedArraySAP.unshift(ddbbData[0]);
-  buildXlsxFile("crossedData2", crossedArraySAP);
+
+  // crossedArraySAP.unshift(ddbbData[0]);
+  // buildXlsxFile("crossedData2", crossedArraySAP);
+
   // console.log(.length);
   // console.log(JSON.stringify(crossedArray, null, 2));
 
