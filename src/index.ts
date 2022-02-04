@@ -385,12 +385,12 @@ export const searchInDDBBforNHCandDate = (
 })();
 
 const headerFilteredData = {
-  NHC: 0,
-  NAME: 1,
-  LAST1: 2,
-  LAST2: 3,
-  TYPE: 4,
-  COMMENT: 5,
+  NHC: "NHC",
+  NAME: "NOM",
+  LAST1: "C1",
+  LAST2: "C2",
+  TYPE: "TIPUS",
+  COMMENT: "__EMPTY",
 };
 
 export const HEADERS_LIVER_DDBB = {
