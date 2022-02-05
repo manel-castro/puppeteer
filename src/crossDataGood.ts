@@ -51,14 +51,16 @@ export const parseXlsx2 = (fileName: string, sheetName: string) => {
   // write the same file
 };
 
-// export const buildXlsxFile2 = (filename: string, data: any[][]) => {
-//   const buffer = xlsx.build([{ name: filename, data } as WorkSheet]);
-//   const writeStream = fs.createWriteStream(
-//     `${__dirname}/../output/${filename}.xlsx`
-//   );
-//   writeStream.write(buffer);
-//   writeStream.close();
-// };
+export const buildXlsxFile2 = (filename: string, JsonArray: any[]) => {
+  var XLSX = xlsx;
+  var workSheet = XLSX.utils.json_to_sheet(JsonArray);
+
+  var wb = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(wb, workSheet, filename);
+
+  xlsx.writeFile(wb, `output/${filename}.xlsx`);
+};
 
 export const addDaysTo1Jan1900 = (days: number) => {
   // used for computing xlsx days
@@ -366,7 +368,7 @@ export const searchInDDBBforNHCandDate = (
     }
   }
 
-  // console.log(crossedArraySAP);
+  console.log(JSON.stringify(crossedArraySAP, null, 2));
 
   // const data = [
   //   [1, 2, 3],
@@ -376,7 +378,7 @@ export const searchInDDBBforNHCandDate = (
   // ];
 
   // crossedArraySAP.unshift(ddbbData[0]);
-  // buildXlsxFile("crossedData2", crossedArraySAP);
+  buildXlsxFile2("crossedData2", crossedArraySAP);
 
   // console.log(.length);
   // console.log(JSON.stringify(crossedArray, null, 2));
