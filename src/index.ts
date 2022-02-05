@@ -3,11 +3,16 @@ import xlsx, { WorkSheet } from "node-xlsx";
 import fs, { unwatchFile } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { HEADERS_LIVER_DDBB, TransformXlsxToJSDateFormat } from "./crossExcels";
+import {
+  HEADERS_LIVER_DDBB,
+  TransformXlsxToJSDateFormat,
+} from "./crossDataGood";
+import moment from "moment";
 
 import { GENERAL_CONSTS, INTERFACE_IDS } from "./consts/general";
 import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
 import { parseXlsx } from "./excel-functions";
+import { parseXlsx2 } from "./crossDataGood";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -38,7 +43,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/0211ba2c-bebd-4c1e-bfbd-9dcdf75aeeb4",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/d54cf110-e709-422a-855d-d1e7d487701a",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -166,7 +171,7 @@ const goBackFromForm = async (frame: puppeteer.Frame) => {
 };
 
 const getScrappingData = async () => {
-  const ddbbData = await parseXlsx("output/crossedData");
+  const ddbbData = await parseXlsx2("output/crossedData2", "crossedData2");
   const HEADERS = ddbbData.shift();
 
   // - check if name and lastnames are equal to ddbb
@@ -197,25 +202,59 @@ const getScrappingData = async () => {
 
   // await ShowEditFunctionalities(frame);
 
-  for (let i = 0; i < 1; i++) {
+  for (let i = 2; i < 3; i++) {
+    const errors = [];
+
     const currentObservation = ddbbData[i];
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
-    const ValueDataIngres = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
-    const ValueDataDiagnostic = (parseInt(ValueDataIngres) - 50).toString(); // !!
-    const ValueDataAlta = (
-      parseInt(ValueDataIngres) +
-      parseInt(currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0")
-    ) // !! estada not always defined
-      .toString();
+    console.log("current sap:", currentNHC);
 
-    const ValueDataIQ = currentObservation[HEADERS_LIVER_DDBB.DATAHEP];
+    console.log(
+      "currentObservation[HEADERS_LIVER_DDBB.DATAHEP]",
+      currentObservation[HEADERS_LIVER_DDBB.DATAHEP]
+    );
+
+    let ValueDataIngres = parseDateToMiliseconds(
+      new Date(currentObservation[HEADERS_LIVER_DDBB.DATAHEP])
+    );
+
+    const ValueDataIQ = ValueDataIngres;
+
+    const ValueDataDiagnostic = addDaysToMilisecondsAndGetDate(
+      ValueDataIngres,
+      -50
+    ); // !!
+
+    const Estada = currentObservation[HEADERS_LIVER_DDBB.ESTADA];
+    console.log("estada is: ", Estada);
+
+    const ValueDataAlta = addDaysToMilisecondsAndGetDate(
+      ValueDataIngres,
+      parseInt(Estada)
+    );
+
+    console.log("next");
+    // !! estada not always defined
+
     const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
     const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES]; //??
     const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla]; //??
     const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
     const ValueEcog = "NO-VALORAT"; //??
     const ValueEras = "NO"; //??
+
+    if (
+      !ValueEdatIQ ||
+      !ValuePes ||
+      !ValueTalla ||
+      !ValueASA ||
+      !ValueEcog ||
+      !ValueEras
+    ) {
+      errors.push("Falta alguna variable, revisar");
+      continue;
+    }
 
     // const ValueTractamentHepatic = wasIQ ?
 
@@ -281,17 +320,26 @@ const getScrappingData = async () => {
       TALLA_CM,
     } = HTML_IDS_LIVER;
 
-    const DataIngresInOddFormat = TransformXlsxToJSDateFormat(ValueDataIngres);
+    const DataIngresInOddFormat = formatDate(
+      addDaysToMilisecondsAndGetDate(ValueDataIngres, 0)
+    );
 
-    const DataAltaInOddFormat = TransformXlsxToJSDateFormat(ValueDataAlta);
+    const DataAltaInOddFormat = formatDate(ValueDataAlta);
 
-    const DataDiagnosticInOddFormat =
-      TransformXlsxToJSDateFormat(ValueDataDiagnostic);
+    const DataDiagnosticInOddFormat = formatDate(ValueDataDiagnostic);
 
-    const DataIQInOddFormat = TransformXlsxToJSDateFormat(ValueDataIQ);
+    const DataIQInOddFormat = formatDate(ValueDataIQ);
+
+    if (
+      !DataAltaInOddFormat ||
+      !DataDiagnosticInOddFormat ||
+      !DataIQInOddFormat ||
+      !DataIngresInOddFormat
+    ) {
+      errors.push("Error en alguna fechas formateadas, revisar");
+      continue;
+    }
     // if (false)
-
-    console.log("DataIQInOddFormat", DataIQInOddFormat);
 
     try {
       await Promise.all([
@@ -362,14 +410,22 @@ const getScrappingData = async () => {
 
     const ValueCMDInforme = ValueCMDAbans;
     const ValueCMDAbansData = ValueCMDAbans
-      ? (
-          parseInt(ValueDataIngres) -
-          (Math.random() * (60 - 50) + 50)
-        ).toString()
+      ? formatDate(
+          addDaysToMilisecondsAndGetDate(
+            ValueDataIngres,
+            -(Math.random() * (60 - 50) + 50)
+          )
+        )
       : ""; // !!  2 months before aprox
     const ValueCMDAfter = "NOCONSTA"; // !!
 
     const ValueTipusCirugHepatica = "MTHs";
+
+    if (!ValueCMDAbans || !ValueCMDAbansData) {
+      errors.push("Error en alguna variable de CMD, revisar");
+      continue;
+    }
+
     try {
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
@@ -429,8 +485,8 @@ const getScrappingData = async () => {
     const ValueTecnica = (
       currentObservation[HEADERS_LIVER_DDBB.TECNICA] as string
     ).toLowerCase();
-    const ValueRadio = currentObservation[HEADERS_LIVER_DDBB.RF];
-    const ValueMW = currentObservation[HEADERS_LIVER_DDBB.mw];
+    const strValueRadio = currentObservation[HEADERS_LIVER_DDBB.RF];
+    const strValueMW = currentObservation[HEADERS_LIVER_DDBB.mw];
 
     const wasIQ = ValueTecnica && ValueTecnica !== ""; // sometimes fail: check inference from other variables
 
@@ -439,6 +495,19 @@ const getScrappingData = async () => {
     //     LOCOREGIONAL_ONLY: string;
     //     LOCOREGIONAL_AND_QUIRURGIC: string;
     // }
+
+    console.log("strValueRadio: ", strValueRadio);
+    console.log("strValueMW: ", strValueMW);
+
+    if (!ValueTecnica || !strValueRadio || !strValueMW) {
+      errors.push("Faltan varaibles de Tecnica IQ");
+    }
+
+    const ValueRadio = strValueRadio === "Si" ? true : false;
+    const ValueMW = strValueMW === "Si" ? true : false;
+
+    console.log("ValueRadio: ", ValueRadio);
+    console.log("ValueMW: ", ValueMW);
 
     const tecnicaIsQuirurgicUnicament =
       wasIQ &&
@@ -710,6 +779,21 @@ getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
+};
+
+function addDaysToMilisecondsAndGetDate(date, days) {
+  var result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+const parseDateToMiliseconds = (date: Date): number =>
+  date ? date.getTime() + 3600000 : 0;
+
+const formatDate = (date: Date | number) => {
+  console.log("date is: ", date);
+
+  return moment(date).format("DD/MM/yyyy");
 };
 
 // const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
