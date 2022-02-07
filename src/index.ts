@@ -291,12 +291,22 @@ const getScrappingData = async () => {
 
     // if (false) {
     try {
+      const _isTancat = (await (
+        await (await frame.$(HTML_IDS_LIVER.DATA_IQ)).getProperty("className")
+      ).jsonValue()) as string;
+
+      const isTancat = _isTancat !== "EDITModificableNoObligatori";
+
       const IsFormClosed_ID = HTML_IDS_LIVER.TANCAMENT_REGISTRE_DADES;
-      await frame.$eval(IsFormClosed_ID, (el: any) => {
-        if (el.value === "true") {
-          el.click();
-        }
-      });
+      await frame.$eval(
+        IsFormClosed_ID,
+        (el: any, value) => {
+          if (value) {
+            el.click();
+          }
+        },
+        isTancat
+      );
 
       // await frame.waitForNavigation({ waitUntil: "networkidle2" });
     } catch (e) {
@@ -1024,7 +1034,7 @@ const getScrappingData = async () => {
 
       if (valueEstat === "EXITUS" && valueExitusData)
         await frame.$eval(
-          basicParseID(TML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_EXITUS),
+          basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_EXITUS),
           (el: any, value) => (el.value = value),
           valueExitusData
         );
