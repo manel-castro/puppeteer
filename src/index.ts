@@ -784,12 +784,9 @@ const getScrappingData = async () => {
     } catch (e) {
       console.error("!!!!!!", e);
     }
-    console.log("Happened valueComplPostIQ out ");
 
     try {
       if (valueComplPostIQ) {
-        console.log("Happened valueComplPostIQ ");
-
         // *****************
         // Compl PostIQ
         // ---- Especifiques
@@ -863,8 +860,6 @@ const getScrappingData = async () => {
           ]
         );
 
-        console.log("Happened NEXT ");
-
         // frame.waitForNavigation();
 
         // *****************
@@ -884,16 +879,6 @@ const getScrappingData = async () => {
         const valueMotiuREIQ = "PER_COMPLICACIO"; //! PK: Sempre será per Altres Complicacions postOp ???
 
         const valueMorbilitat = "SI";
-
-        console.log("VARIABLES: ");
-
-        console.log("clavienGrau: ", clavienGrau);
-        console.log("valueEstadaUCIREA: ", valueEstadaUCIREA);
-        console.log("valueTempsUCIREA: ", valueTempsUCIREA);
-        console.log("valueREIQ: ", valueREIQ);
-        console.log("valueDataREIQ: ", valueDataREIQ);
-        console.log("valueMotiuREIQ: ", valueMotiuREIQ);
-        console.log("valueMorbilitat: ", valueMorbilitat);
 
         await frame.select(
           basicParseID(
@@ -938,6 +923,41 @@ const getScrappingData = async () => {
             ),
           ]);
       }
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
+    try {
+      const valueAffMargeResAP = currentObservation[HEADERS_LIVER_DDBB.INVMARG];
+      const valueDistMargeResAP =
+        currentObservation[HEADERS_LIVER_DDBB.MARGEN] || 0;
+      const valueNumMetAP = currentObservation[HEADERS_LIVER_DDBB.NMETAP] || 0;
+      const valueMidaMaxMetAP =
+        (currentObservation[HEADERS_LIVER_DDBB.MIDAAP] || 0) * 10;
+
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.AP.AFFECT_MARGE_RESSECCIO.ID),
+        HTML_IDS_LIVER.AP.AFFECT_MARGE_RESSECCIO.VALUES[
+          NoSiParse(valueAffMargeResAP)
+        ]
+      );
+
+      if (valueAffMargeResAP && valueDistMargeResAP)
+        await frame.$eval(
+          HTML_IDS_LIVER.AP.DIST_MARGE_RESSECCIO,
+          (el: any, value) => (el.value = value),
+          valueDistMargeResAP
+        );
+      await frame.$eval(
+        HTML_IDS_LIVER.AP.NUMERO_MH,
+        (el: any, value) => (el.value = value),
+        valueNumMetAP
+      );
+      await frame.$eval(
+        HTML_IDS_LIVER.AP.MAJOR_MH,
+        (el: any, value) => (el.value = value),
+        valueMidaMaxMetAP
+      );
     } catch (e) {
       console.error("!!!!!!", e);
     }
