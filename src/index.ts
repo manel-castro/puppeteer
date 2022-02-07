@@ -686,13 +686,14 @@ const getScrappingData = async () => {
     const _tipusReseccioMH = currentObservation[
       HEADERS_LIVER_DDBB.RESMAY_MEN_ampli
     ] as string;
-    const tipusReseccioMH = _tipusReseccioMH.includes("ampliada")
-      ? "MAJOR_EXTESA"
-      : _tipusReseccioMH.includes("Major")
-      ? "MAJOR"
-      : _tipusReseccioMH.includes("Menor")
-      ? "MENOR"
-      : "NO_CONSTA";
+    const tipusReseccioMH: keyof typeof HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES =
+      _tipusReseccioMH.includes("ampliada")
+        ? "MAJOR_EXTESA"
+        : _tipusReseccioMH.includes("Major")
+        ? "MAJOR"
+        : _tipusReseccioMH.includes("Menor")
+        ? "MENOR"
+        : "NO_CONSTA";
 
     const tipusBrisbane = "LLEGIR CASOS DEL TecnicaQuir_descripció";
 
@@ -701,7 +702,7 @@ const getScrappingData = async () => {
         frame.select(
           basicParseID(HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID),
           HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
-            affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+            NoSiParse(iQSimuTumorPrimary)
           ]
         ),
         frame.select(
@@ -832,7 +833,9 @@ const getScrappingData = async () => {
             ]
           );
           await frame.$eval(
-            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.DEBIT_DIARI_MAX_FUGA_BIL,
+            basicParseID(
+              HTML_IDS_LIVER.COMPL_ESPECIFIQUES.DEBIT_DIARI_MAX_FUGA_BIL
+            ),
             (el: any, FROM) => (el.value = FROM),
             valueFistulaBilDebitDiari
           );
@@ -891,7 +894,9 @@ const getScrappingData = async () => {
 
         if (valueEstadaUCIREA)
           await frame.$eval(
-            HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.TEMPS_UCI_REA_DIES,
+            basicParseID(
+              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.TEMPS_UCI_REA_DIES
+            ),
             (el: any, value) => (el.value = value),
             valueTempsUCIREA
           );
@@ -905,7 +910,9 @@ const getScrappingData = async () => {
         if (valueREIQ === "Si")
           await Promise.all([
             frame.$eval(
-              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.DATA_REINT_90_DIES,
+              basicParseID(
+                HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.DATA_REINT_90_DIES
+              ),
               (el: any, FROM) => (el.value = FROM),
               valueDataREIQ
             ),
@@ -949,17 +956,17 @@ const getScrappingData = async () => {
 
       if (valueAffMargeResAP && valueDistMargeResAP)
         await frame.$eval(
-          HTML_IDS_LIVER.AP.DIST_MARGE_RESSECCIO,
+          basicParseID(HTML_IDS_LIVER.AP.DIST_MARGE_RESSECCIO),
           (el: any, value) => (el.value = value),
           valueDistMargeResAP
         );
       await frame.$eval(
-        HTML_IDS_LIVER.AP.NUMERO_MH,
+        basicParseID(HTML_IDS_LIVER.AP.NUMERO_MH),
         (el: any, value) => (el.value = value),
         valueNumMetAP
       );
       await frame.$eval(
-        HTML_IDS_LIVER.AP.MAJOR_MH,
+        basicParseID(HTML_IDS_LIVER.AP.MAJOR_MH),
         (el: any, value) => (el.value = value),
         valueMidaMaxMetAP
       );
@@ -1005,7 +1012,7 @@ const getScrappingData = async () => {
           : "ALTRES";
 
       await frame.$eval(
-        HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_ULT_CONTROL,
+        basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_ULT_CONTROL),
         (el: any, value) => (el.value = value),
         valueDarrerControl
       );
@@ -1017,7 +1024,7 @@ const getScrappingData = async () => {
 
       if (valueEstat === "EXITUS" && valueExitusData)
         await frame.$eval(
-          HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_EXITUS,
+          basicParseID(TML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_EXITUS),
           (el: any, value) => (el.value = value),
           valueExitusData
         );
