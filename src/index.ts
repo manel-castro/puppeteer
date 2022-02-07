@@ -764,6 +764,104 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
+    // ************
+    // Compl PostIQ
+    // ************
+
+    const valueComplPostIQ =
+      parseInt(currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN]) !== 0;
+
+    try {
+      await Promise.all([
+        frame.select(
+          basicParseID(HTML_IDS_LIVER.COMPL_POST_IQ_90_DIES.ID),
+          HTML_IDS_LIVER.COMPL_POST_IQ_90_DIES.VALUES[
+            valueComplPostIQ ? "SI" : "NO"
+          ]
+        ),
+      ]);
+      // frame.waitForNavigation();
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
+    try {
+      if (valueComplPostIQ) {
+        const valueInsufHepatica =
+          currentObservation[HEADERS_LIVER_DDBB.INSUFHEPisgls];
+        const valueInsufHepaticaGrau =
+          currentObservation[HEADERS_LIVER_DDBB.GrauIH];
+        const valueFistulaBil = currentObservation[HEADERS_LIVER_DDBB.FISTBILI];
+        const valueFistulaBilGrau =
+          currentObservation[HEADERS_LIVER_DDBB.GRAUFB];
+        const valueFistulaBilDebitDiari = 0;
+        const valueCalDrenatge =
+          currentObservation[HEADERS_LIVER_DDBB.INFESPAI];
+        const valueHemoper = currentObservation[HEADERS_LIVER_DDBB.HEMOPER];
+        const valueAscitis = currentObservation[HEADERS_LIVER_DDBB.ASCITIS];
+
+        await Promise.all([
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.ID),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.VALUES[
+              NoSiParse(valueInsufHepatica)
+            ]
+          ),
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.ID),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.VALUES[
+              NoSiParse(valueInsufHepaticaGrau)
+            ]
+          ),
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.ID),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.VALUES[
+              NoSiParse(valueFistulaBil)
+            ]
+          ),
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_FIST_BIL.ID),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_FIST_BIL.VALUES[
+              NoSiParse(valueFistulaBilGrau)
+            ]
+          ),
+          frame.$eval(
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.DEBIT_DIARI_MAX_FUGA_BIL,
+            (el: any, FROM) => (el.value = FROM),
+            valueFistulaBilDebitDiari
+          ),
+          frame.select(
+            basicParseID(
+              HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
+                .ID
+            ),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
+              .VALUES[NoSiParse(valueCalDrenatge)]
+          ),
+          frame.select(
+            basicParseID(
+              HTML_IDS_LIVER.COMPL_ESPECIFIQUES
+                .HEMOPERITONEU_POST_IQ_REINTERVENCIO.ID
+            ),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES
+              .HEMOPERITONEU_POST_IQ_REINTERVENCIO.VALUES[
+              NoSiParse(valueHemoper)
+            ]
+          ),
+
+          frame.select(
+            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.ID),
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.VALUES[
+              NoSiParse(valueAscitis)
+            ]
+          ),
+        ]);
+        frame.waitForNavigation();
+      }
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
     console.log("finished with number: ", i);
 
     // GOBACK METHODS
@@ -780,6 +878,9 @@ getScrappingData();
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
 };
+
+const NoSiParse = (val: string) =>
+  val === "No" ? "NO" : val === "Si" ? "SI" : "NOCONSTA";
 
 function addDaysToMilisecondsAndGetDate(date, days) {
   var result = new Date(date);
