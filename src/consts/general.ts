@@ -21,5 +21,6 @@ export const INTERFACE_IDS = {
 
   FORM_PAGE: {
     BUTTON_BACK_FORM: "#form\\3A back",
+    BUTTON_SAVE_FORM: "form\\3A save",
   },
 };

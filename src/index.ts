@@ -216,6 +216,26 @@ const getScrappingData = async () => {
 
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
+    // const _formNHC = (await (
+    //   await (
+    //     await frame.$(basicParseID(HTML_IDS_LIVER.TEXT_FORM_NHC))
+    //   ).getProperty("value")
+    // ).jsonValue()) as string;
+    const _formNHC = (await (
+      await (
+        await frame.$(basicParseID(HTML_IDS_LIVER.TEXT_FORM_NHC))
+      ).getProperty("value")
+    ).jsonValue()) as string;
+
+    if (_formNHC != currentNHC) {
+      console.error(
+        "NHC NOT MATCHING. Revise registers. Going back, try again..."
+      );
+      await goBackFromForm(frame);
+      await goBackFromList(frame);
+      break;
+    }
+
     console.log("Starting with obs nº: ", i);
     console.log("NHC: ", currentNHC);
 
@@ -305,7 +325,7 @@ const getScrappingData = async () => {
       await frame.$eval(
         IsFormClosed_ID,
         (el: any, value) => {
-          if (value) {
+          if (!value) {
             el.click();
           }
         },
