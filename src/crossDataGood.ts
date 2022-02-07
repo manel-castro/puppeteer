@@ -51,7 +51,11 @@ export const parseXlsx2 = (fileName: string, sheetName: string) => {
   // write the same file
 };
 
-export const buildXlsxFile2 = (filename: string, JsonArray: any[]) => {
+export const buildXlsxFile2 = (
+  filename: string,
+  JsonArray: any[],
+  dirName = "output"
+) => {
   var XLSX = xlsx;
   var workSheet = XLSX.utils.json_to_sheet(JsonArray);
 
@@ -59,7 +63,7 @@ export const buildXlsxFile2 = (filename: string, JsonArray: any[]) => {
 
   XLSX.utils.book_append_sheet(wb, workSheet, filename);
 
-  xlsx.writeFile(wb, `output/${filename}.xlsx`);
+  xlsx.writeFile(wb, `${dirName}/${filename}.xlsx`);
 };
 
 export const addDaysTo1Jan1900 = (days: number) => {

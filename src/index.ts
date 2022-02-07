@@ -4,6 +4,7 @@ import fs, { unwatchFile } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
+  buildXlsxFile2,
   HEADERS_LIVER_DDBB,
   TransformXlsxToJSDateFormat,
 } from "./crossDataGood";
@@ -172,7 +173,6 @@ const goBackFromForm = async (frame: puppeteer.Frame) => {
 
 const getScrappingData = async () => {
   const ddbbData = await parseXlsx2("output/crossedData2", "crossedData2");
-  const HEADERS = ddbbData.shift();
 
   // - check if name and lastnames are equal to ddbb
   // - check if Register is closed
@@ -202,18 +202,22 @@ const getScrappingData = async () => {
 
   // await ShowEditFunctionalities(frame);
 
-  for (let i = 2; i < 3; i++) {
+  console.log("first");
+
+  const whereWeLeftIt = readLastObservationNumber();
+  console.log("next, num is ", whereWeLeftIt);
+
+  const initialCount = whereWeLeftIt + 1 || 0;
+
+  for (let i = initialCount; i < 6; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
+
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
 
-    console.log("current sap:", currentNHC);
-
-    console.log(
-      "currentObservation[HEADERS_LIVER_DDBB.DATAHEP]",
-      currentObservation[HEADERS_LIVER_DDBB.DATAHEP]
-    );
+    console.log("Starting with obs nº: ", i);
+    console.log("NHC: ", currentNHC);
 
     let ValueDataIngres = parseDateToMiliseconds(
       new Date(currentObservation[HEADERS_LIVER_DDBB.DATAHEP])
@@ -227,14 +231,12 @@ const getScrappingData = async () => {
     ); // !!
 
     const Estada = currentObservation[HEADERS_LIVER_DDBB.ESTADA];
-    console.log("estada is: ", Estada);
 
     const ValueDataAlta = addDaysToMilisecondsAndGetDate(
       ValueDataIngres,
       parseInt(Estada)
     );
 
-    console.log("next");
     // !! estada not always defined
 
     const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
@@ -252,7 +254,9 @@ const getScrappingData = async () => {
       !ValueEcog ||
       !ValueEras
     ) {
-      errors.push("Falta alguna variable, revisar");
+      const errorMessage = "Falta alguna variable, revisar";
+      errors.push(errorMessage);
+      addToUncompletedList(currentObservation, errorMessage);
       continue;
     }
 
@@ -346,7 +350,9 @@ const getScrappingData = async () => {
       !DataIQInOddFormat ||
       !DataIngresInOddFormat
     ) {
-      errors.push("Error en alguna fechas formateadas, revisar");
+      const errorMessage = "Error en alguna fechas formateadas, revisar";
+      errors.push(errorMessage);
+      addToUncompletedList(currentObservation, errorMessage);
       continue;
     }
     // if (false)
@@ -416,8 +422,6 @@ const getScrappingData = async () => {
       currentObservation[HEADERS_LIVER_DDBB.COMITE]?.toUpperCase() ||
       "NOCONSTA";
 
-    console.log("ValueCMDAbans: ", ValueCMDAbans);
-
     const ValueCMDInforme = ValueCMDAbans;
     const ValueCMDAbansData = ValueCMDAbans
       ? formatDate(
@@ -432,7 +436,9 @@ const getScrappingData = async () => {
     const ValueTipusCirugHepatica = "MTHs";
 
     if (!ValueCMDAbans || !ValueCMDAbansData) {
-      errors.push("Error en alguna variable de CMD, revisar");
+      const errorMessage = "Error en alguna variable de CMD, revisar";
+      errors.push(errorMessage);
+      addToUncompletedList(currentObservation, errorMessage);
       continue;
     }
 
@@ -449,10 +455,8 @@ const getScrappingData = async () => {
           HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
         ),
       ]);
-      // console.log("0 gonna wait for navigation");
 
       // await frame.waitForNavigation({ waitUntil: "networkidle2" });
-      // console.log("0 waited for navigation");
     } catch (e) {
       console.error(
         "unable to complete promise all for CMD data before condition, error message: "
@@ -506,18 +510,15 @@ const getScrappingData = async () => {
     //     LOCOREGIONAL_AND_QUIRURGIC: string;
     // }
 
-    console.log("strValueRadio: ", strValueRadio);
-    console.log("strValueMW: ", strValueMW);
-
     if (!ValueTecnica || !strValueRadio || !strValueMW) {
-      errors.push("Faltan varaibles de Tecnica IQ");
+      const errorMessage = "Faltan varaibles de Tecnica IQ";
+      errors.push(errorMessage);
+      addToUncompletedList(currentObservation, errorMessage);
+      continue;
     }
 
     const ValueRadio = strValueRadio === "Si" ? true : false;
     const ValueMW = strValueMW === "Si" ? true : false;
-
-    console.log("ValueRadio: ", ValueRadio);
-    console.log("ValueMW: ", ValueMW);
 
     const tecnicaIsQuirurgicUnicament =
       wasIQ &&
@@ -542,11 +543,9 @@ const getScrappingData = async () => {
         ),
       ]);
 
-      console.log("1. gonna wait for navigation");
       frame.waitForNavigation();
 
       // await frame.waitForNavigation(); // formulary might change
-      console.log("1. waited for navigation");
     } catch (e) {
       console.error("____ UNABLE TO SOLVE IND_CIRU_HEP && TRACTAMENT_H ");
     }
@@ -584,8 +583,6 @@ const getScrappingData = async () => {
       HTML_IDS_LIVER;
 
     console.log("start inputing IQ data");
-    console.log("Conversio:", Conversio);
-    console.log("Conversio:", Conversio);
 
     try {
       // await Promise.all([
@@ -1051,7 +1048,12 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
-    console.log("finished with number: ", i);
+    console.log("finished with obs nº: ", i);
+    console.log("NHC: ", currentNHC);
+
+    registerCurrentObservationNumber(i);
+    await addToCompletedList(currentObservation);
+    console.log(currentNHC, " added to completed register");
 
     // GOBACK METHODS
     // METHOD 1:
@@ -1081,9 +1083,73 @@ const parseDateToMiliseconds = (date: Date): number =>
   date ? date.getTime() + 3600000 : 0;
 
 const formatDate = (date: Date | number) => {
-  console.log("date is: ", date);
-
   return moment(date).format("DD/MM/yyyy");
+};
+
+const addToUncompletedList = async (
+  currentObservation: any,
+  errorType: string
+) => {
+  const ddbbData = await parseXlsx2("register/uncompletedRegister", "Sheet1");
+
+  const data = [...ddbbData];
+
+  const timestamp = new Date(Date.now());
+  data.push({ ...currentObservation, timestamp, errorType });
+
+  buildXlsxFile2("uncompletedRegister", data, "register");
+};
+
+const addToCompletedList = async (currentObservation: any) => {
+  const ddbbData = await parseXlsx2("register/completedRegister", "Sheet1");
+
+  const data = [...ddbbData];
+
+  const timestamp = new Date(Date.now());
+  data.push({ ...currentObservation, timestamp });
+
+  buildXlsxFile2("completedRegister", data, "register");
+};
+
+const registerCurrentObservationNumber = (currentObsNum: number) => {
+  fs.writeFileSync(
+    "register/lastObservationNum.txt",
+    currentObsNum.toString(),
+    "utf-8"
+  );
+
+  console.log("Registered last obs num: ", currentObsNum);
+};
+const readLastObservationNumber = (): number => {
+  // where we left the work
+  return parseInt(fs.readFileSync("register/lastObservationNum.txt", "utf-8"));
+};
+
+const iterationCCIEstimation = (current: number) => {};
+
+const estimateCCIInBaseMaxClavienAndTargetCCI = (
+  maxClavien: string,
+  targetCCI: number
+) => {
+  const errorMargin = 0.1;
+  const currentIterationValue = 0;
+
+  let isNextToTarget = false;
+  const upperBoundary = targetCCI * (1 + errorMargin);
+  const lowerBoundary = targetCCI / (1 + errorMargin);
+
+  while (isNextToTarget) {
+    const isIntoUpperBoundary = currentIterationValue < upperBoundary;
+    const isIntoLowerBoundary = currentIterationValue > lowerBoundary;
+
+    isNextToTarget =
+      currentIterationValue === targetCCI ||
+      (isIntoLowerBoundary && isIntoUpperBoundary);
+
+    // if( > currentIterationValue)
+
+    // if(targetCCI < currentIterationValue)
+  }
 };
 
 // const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
