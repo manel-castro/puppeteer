@@ -94,24 +94,31 @@ const ExecutePuppeteerSearch = (
     };
 
     try {
-      await Promise.all([
-        frame.$eval(
-          TEXT_INPUT_FROM_DATE,
-          (el: any, FROM) => (el.value = FROM),
-          DATES.FROM
-        ),
-        frame.$eval(
-          TEXT_INPUT_TO_DATE,
-          (el: any, TO) => (el.value = TO),
-          DATES.TO
-        ),
-        frame.$eval(TEXT_INPUT_NHC, (el: any, nhc) => (el.value = nhc), NHC),
-      ]);
+      await frame.$eval(
+        TEXT_INPUT_FROM_DATE,
+        (el: any, FROM) => (el.value = FROM),
+        DATES.FROM
+      );
+      await frame.$eval(
+        TEXT_INPUT_TO_DATE,
+        (el: any, TO) => (el.value = TO),
+        DATES.TO
+      );
     } catch (e) {
-      console.error("Unable to complete form search input data ");
+      console.error("Unable to complete date form search input data ");
       console.error(e);
     }
 
+    try {
+      await frame.$eval(
+        TEXT_INPUT_NHC,
+        (el: any, nhc) => (el.value = nhc),
+        NHC
+      );
+    } catch (e) {
+      console.error("Unable to complete NHC form search input data ");
+      console.error(e);
+    }
     // variables must be passed as node env varibles, see:
     // https://stackoverflow.com/questions/55524329/puppeteer-access-to-outer-scope-variable-fails
 
@@ -159,6 +166,14 @@ const goBackFromList = async (frame: puppeteer.Frame) => {
   await Promise.all([
     frame.waitForSelector(BUTTON_BACK_LIST),
     frame.$eval(BUTTON_BACK_LIST, (el: any) => el.click()),
+    frame.waitForNavigation({ waitUntil: "networkidle2" }),
+  ]);
+};
+const saveForm = async (frame: puppeteer.Frame) => {
+  const saveButtID = INTERFACE_IDS.FORM_PAGE.BUTTON_SAVE_FORM;
+  await Promise.all([
+    // frame.waitForSelector(saveButtID),
+    frame.$eval(saveButtID, (el: any) => el.click()),
     frame.waitForNavigation({ waitUntil: "networkidle2" }),
   ]);
 };
@@ -221,20 +236,6 @@ const getScrappingData = async () => {
     //     await frame.$(basicParseID(HTML_IDS_LIVER.TEXT_FORM_NHC))
     //   ).getProperty("value")
     // ).jsonValue()) as string;
-    const _formNHC = (await (
-      await (
-        await frame.$(basicParseID(HTML_IDS_LIVER.TEXT_FORM_NHC))
-      ).getProperty("value")
-    ).jsonValue()) as string;
-
-    if (_formNHC != currentNHC) {
-      console.error(
-        "NHC NOT MATCHING. Revise registers. Going back, try again..."
-      );
-      await goBackFromForm(frame);
-      await goBackFromList(frame);
-      break;
-    }
 
     console.log("Starting with obs nº: ", i);
     console.log("NHC: ", currentNHC);
@@ -285,7 +286,7 @@ const getScrappingData = async () => {
     // continue;
     // if (false)
     if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
-      console.error("somet hing went wrong");
+      console.error("something went wrong");
     }
 
     // GO to list item form
@@ -312,6 +313,28 @@ const getScrappingData = async () => {
 
 
      */
+
+    try {
+      const _formNHC = (await (
+        await (
+          await frame.$(basicParseID(HTML_IDS_LIVER.TEXT_FORM_NHC))
+        ).getProperty("value")
+      ).jsonValue()) as string;
+
+      if (_formNHC != currentNHC) {
+        console.error(
+          "NHC NOT MATCHING. Revise registers. Going back, try again..."
+        );
+        // TODO: https://stackoverflow.com/questions/3072718/restart-function-that-is-running
+        // Also might reload to go to Search and abstract search function to reuse here
+        await goBackFromForm(frame);
+        await goBackFromList(frame);
+        break;
+      }
+    } catch (e) {
+      console.error("UNABLE TO EXECUTE NHC COMPARISON");
+      console.error("ERROR IS: ", e);
+    }
 
     // if (false) {
     try {
@@ -340,9 +363,9 @@ const getScrappingData = async () => {
     // }
 
     // START INPUTING DATA
-    console.log("_____________________");
+    console.log("********************");
     console.log("START INPUTING DATA");
-    console.log("_____________________");
+    console.log("********************");
 
     const {
       DATA_INGRES,
@@ -486,17 +509,25 @@ const getScrappingData = async () => {
 
     //____TODO: TEST THIS CONDITION____
 
-    if (ValueCMDAbans === "SI") {
+    if (ValueCMDAbans === "SI" && ValueCMDAbansData) {
       try {
+        console.log("ValueCMDAbansData", ValueCMDAbansData);
+
         // await Promise.all([
         //   frame.waitForSelector(HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS),
         //   frame.waitForSelector(HTML_IDS_LIVER.INFORME_CMD_ABANS.ID),
         // ]);
 
+        /*
+         HTML_IDS_LIVER.NUM_MH_DIAG,
+          (el: any, value) => (el.value = value),
+          numMH
+        */
         await Promise.all([
           frame.$eval(
             HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
-            (el: any) => (el.value = ValueCMDAbansData)
+            (el: any, value) => (el.value = value),
+            ValueCMDAbansData
           ),
           frame.select(
             HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
@@ -504,10 +535,13 @@ const getScrappingData = async () => {
           ),
         ]);
       } catch (e) {
-        console.error(
-          "unable to complete promise all for CMD data after condition CMD = true, error message: "
-        );
+        const errorMessage =
+          "unable to complete promise all for CMD data after condition CMD = true, error message: ";
+        console.error(errorMessage);
         console.error(e);
+        errors.push(errorMessage);
+        addToUncompletedList(currentObservation, errorMessage);
+        continue;
       }
     }
 
@@ -1074,6 +1108,12 @@ const getScrappingData = async () => {
     registerCurrentObservationNumber(i);
     await addToCompletedList(currentObservation);
     console.log(currentNHC, " added to completed register");
+    console.log("SAVING AND GOING TO SEARCH FORM");
+
+    await saveForm(frame);
+    await goBackFromList(frame);
+
+    await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
 
     // GOBACK METHODS
     // METHOD 1:
