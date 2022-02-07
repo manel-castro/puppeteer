@@ -989,8 +989,9 @@ const getScrappingData = async () => {
     // *****************
 
     try {
-      const valueDarrerControl =
-        currentObservation[HEADERS_LIVER_DDBB.DATAULTCONT]; // PK, es correcte?
+      const valueDarrerControl = formatDate(
+        currentObservation[HEADERS_LIVER_DDBB.DATAULTCONT]
+      ); // PK, es correcte?
       const _estatPacient = currentObservation[HEADERS_LIVER_DDBB.ESTAT];
       const valueEstat: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.VALUES =
         _estatPacient === "Viu"
