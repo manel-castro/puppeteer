@@ -784,9 +784,16 @@ const getScrappingData = async () => {
     } catch (e) {
       console.error("!!!!!!", e);
     }
+    console.log("Happened valueComplPostIQ out ");
 
     try {
       if (valueComplPostIQ) {
+        console.log("Happened valueComplPostIQ ");
+
+        // *****************
+        // Compl PostIQ
+        // ---- Especifiques
+        // *****************
         const valueInsufHepatica =
           currentObservation[HEADERS_LIVER_DDBB.INSUFHEPisgls];
         const valueInsufHepaticaGrau =
@@ -794,69 +801,142 @@ const getScrappingData = async () => {
         const valueFistulaBil = currentObservation[HEADERS_LIVER_DDBB.FISTBILI];
         const valueFistulaBilGrau =
           currentObservation[HEADERS_LIVER_DDBB.GRAUFB];
-        const valueFistulaBilDebitDiari = 0;
+        const valueFistulaBilDebitDiari = "0";
         const valueCalDrenatge =
           currentObservation[HEADERS_LIVER_DDBB.INFESPAI];
         const valueHemoper = currentObservation[HEADERS_LIVER_DDBB.HEMOPER];
         const valueAscitis = currentObservation[HEADERS_LIVER_DDBB.ASCITIS];
 
-        await Promise.all([
-          frame.select(
-            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.ID),
-            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.VALUES[
-              NoSiParse(valueInsufHepatica)
-            ]
-          ),
-          frame.select(
+        await frame.select(
+          basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.ID),
+          HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.VALUES[
+            NoSiParse(valueInsufHepatica)
+          ]
+        );
+
+        if (valueInsufHepatica === "Si" && valueInsufHepatica)
+          await frame.select(
             basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.ID),
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.VALUES[
-              NoSiParse(valueInsufHepaticaGrau)
+              valueInsufHepaticaGrau
             ]
-          ),
-          frame.select(
-            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.ID),
-            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.VALUES[
-              NoSiParse(valueFistulaBil)
-            ]
-          ),
-          frame.select(
+          );
+        await frame.select(
+          basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.ID),
+          HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.VALUES[
+            NoSiParse(valueFistulaBil)
+          ]
+        );
+        if (valueFistulaBilGrau === "Si" && valueFistulaBilDebitDiari) {
+          await frame.select(
             basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_FIST_BIL.ID),
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_FIST_BIL.VALUES[
               NoSiParse(valueFistulaBilGrau)
             ]
-          ),
-          frame.$eval(
+          );
+          await frame.$eval(
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.DEBIT_DIARI_MAX_FUGA_BIL,
             (el: any, FROM) => (el.value = FROM),
             valueFistulaBilDebitDiari
+          );
+        }
+        await frame.select(
+          basicParseID(
+            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE.ID
           ),
-          frame.select(
-            basicParseID(
-              HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
-                .ID
-            ),
-            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
-              .VALUES[NoSiParse(valueCalDrenatge)]
-          ),
-          frame.select(
-            basicParseID(
-              HTML_IDS_LIVER.COMPL_ESPECIFIQUES
-                .HEMOPERITONEU_POST_IQ_REINTERVENCIO.ID
-            ),
+          HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
+            .VALUES[NoSiParse(valueCalDrenatge)]
+        );
+        await frame.select(
+          basicParseID(
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES
-              .HEMOPERITONEU_POST_IQ_REINTERVENCIO.VALUES[
-              NoSiParse(valueHemoper)
-            ]
+              .HEMOPERITONEU_POST_IQ_REINTERVENCIO.ID
           ),
+          HTML_IDS_LIVER.COMPL_ESPECIFIQUES.HEMOPERITONEU_POST_IQ_REINTERVENCIO
+            .VALUES[NoSiParse(valueHemoper)]
+        );
 
-          frame.select(
-            basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.ID),
-            HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.VALUES[
-              NoSiParse(valueAscitis)
-            ]
+        await frame.select(
+          basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.ID),
+          HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.VALUES[
+            NoSiParse(valueAscitis)
+          ]
+        );
+
+        console.log("Happened NEXT ");
+
+        // frame.waitForNavigation();
+
+        // *****************
+        // Compl PostIQ
+        // ---- UCI
+        // *****************
+
+        const clavienGrau = currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN];
+        const valueEstadaUCIREA =
+          clavienGrau &&
+          (clavienGrau === "IVa" ||
+            clavienGrau === "IVb" ||
+            clavienGrau === "V"); // PK: !! Causa REIQ??? || Grau Clavien Dindo  >= 4
+        const valueTempsUCIREA = "0"; // PK: induir:  Temps normal d'estada + alta ????
+        const valueREIQ = currentObservation[HEADERS_LIVER_DDBB.REIQ];
+        const valueDataREIQ = "00/00/2000";
+        const valueMotiuREIQ = "PER_COMPLICACIO"; //! PK: Sempre será per Altres Complicacions postOp ???
+
+        const valueMorbilitat = "SI";
+
+        console.log("VARIABLES: ");
+
+        console.log("clavienGrau: ", clavienGrau);
+        console.log("valueEstadaUCIREA: ", valueEstadaUCIREA);
+        console.log("valueTempsUCIREA: ", valueTempsUCIREA);
+        console.log("valueREIQ: ", valueREIQ);
+        console.log("valueDataREIQ: ", valueDataREIQ);
+        console.log("valueMotiuREIQ: ", valueMotiuREIQ);
+        console.log("valueMorbilitat: ", valueMorbilitat);
+
+        await frame.select(
+          basicParseID(
+            HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.ESTADA_UCI_REA.ID
           ),
-        ]);
-        frame.waitForNavigation();
+          HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.ESTADA_UCI_REA.VALUES[
+            valueEstadaUCIREA ? "SI" : "NO"
+          ]
+        );
+
+        if (valueEstadaUCIREA)
+          await frame.$eval(
+            HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.TEMPS_UCI_REA_DIES,
+            (el: any, value) => (el.value = value),
+            valueTempsUCIREA
+          );
+
+        await frame.select(
+          basicParseID(HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.REINT_90_DIES.ID),
+          HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.REINT_90_DIES.VALUES[
+            NoSiParse(valueREIQ)
+          ]
+        );
+        if (valueREIQ === "Si")
+          await Promise.all([
+            frame.$eval(
+              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.DATA_REINT_90_DIES,
+              (el: any, FROM) => (el.value = FROM),
+              valueDataREIQ
+            ),
+            frame.select(
+              basicParseID(
+                HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.ID
+              ),
+              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.VALUES[
+                valueMotiuREIQ
+              ]
+            ),
+            frame.select(
+              basicParseID(HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.ID),
+              HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.VALUES[valueMorbilitat]
+            ),
+          ]);
       }
     } catch (e) {
       console.error("!!!!!!", e);
