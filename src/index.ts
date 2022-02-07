@@ -44,7 +44,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/d54cf110-e709-422a-855d-d1e7d487701a",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/72f7c850-a8da-485b-a1bc-f491333695cc",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -172,7 +172,7 @@ const goBackFromList = async (frame: puppeteer.Frame) => {
 const saveForm = async (frame: puppeteer.Frame) => {
   const saveButtID = INTERFACE_IDS.FORM_PAGE.BUTTON_SAVE_FORM;
   await Promise.all([
-    // frame.waitForSelector(saveButtID),
+    frame.waitForSelector(saveButtID),
     frame.$eval(saveButtID, (el: any) => el.click()),
     frame.waitForNavigation({ waitUntil: "networkidle2" }),
   ]);
@@ -691,7 +691,7 @@ const getScrappingData = async () => {
     }
 
     const numMH = currentObservation[HEADERS_LIVER_DDBB.NMETIMAGpre];
-    const MHMajorDiam = (
+    const MHMajorDiam = Math.round(
       parseInt(currentObservation[HEADERS_LIVER_DDBB.MIDAMHIMATGE]) * 10
     ).toString();
 
@@ -1003,10 +1003,13 @@ const getScrappingData = async () => {
     try {
       const valueAffMargeResAP = currentObservation[HEADERS_LIVER_DDBB.INVMARG];
       const valueDistMargeResAP =
-        currentObservation[HEADERS_LIVER_DDBB.MARGEN] || 0;
+        Math.round(
+          parseInt(currentObservation[HEADERS_LIVER_DDBB.MARGEN])
+        ).toString() || "0";
       const valueNumMetAP = currentObservation[HEADERS_LIVER_DDBB.NMETAP] || 0;
-      const valueMidaMaxMetAP =
-        (currentObservation[HEADERS_LIVER_DDBB.MIDAAP] || 0) * 10;
+      const valueMidaMaxMetAP = Math.round(
+        (parseInt(currentObservation[HEADERS_LIVER_DDBB.MIDAAP]) || 0) * 10
+      ).toString();
 
       await frame.select(
         basicParseID(HTML_IDS_LIVER.AP.AFFECT_MARGE_RESSECCIO.ID),
