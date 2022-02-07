@@ -927,6 +927,11 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
+    // *****************
+    // AP
+    //
+    // *****************
+
     try {
       const valueAffMargeResAP = currentObservation[HEADERS_LIVER_DDBB.INVMARG];
       const valueDistMargeResAP =
@@ -958,6 +963,72 @@ const getScrappingData = async () => {
         (el: any, value) => (el.value = value),
         valueMidaMaxMetAP
       );
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
+    // *****************
+    // Estat final
+    // *****************
+
+    try {
+      const valueDarrerControl =
+        currentObservation[HEADERS_LIVER_DDBB.DATAULTCONT]; // PK, es correcte?
+      const _estatPacient = currentObservation[HEADERS_LIVER_DDBB.ESTAT];
+      const valueEstat: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.VALUES =
+        _estatPacient === "Viu"
+          ? "VIU"
+          : _estatPacient === "Mort (lliure malaltia)"
+          ? "EXITUS"
+          : _estatPacient === "Perdut"
+          ? "PERDUA_SEGUIMENT"
+          : "PERDUA_SEGUIMENT";
+      const valueExitusData =
+        currentObservation[HEADERS_LIVER_DDBB.DataEXITUS] || "";
+
+      // Causa exitus:
+      const _perComplPostOP =
+        currentObservation[HEADERS_LIVER_DDBB.MORTALITAT] === "Si";
+      const _perRecidiva =
+        currentObservation[HEADERS_LIVER_DDBB.RECHEP] === "Si"; //?? PK
+      const _recidibaPulmonar = currentObservation[HEADERS_LIVER_DDBB.RECPUL]; //?? PK
+      const _perProgressioTumoral =
+        _recidibaPulmonar && _recidibaPulmonar.includes("Progressió");
+
+      const valueCausaExitus: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES =
+        _perProgressioTumoral
+          ? "MALALT_TUMOR_PROGRESSIO"
+          : _perRecidiva
+          ? "MALALT_TUMOR_RECIDIVA"
+          : _perComplPostOP
+          ? "COMPL_POSTOP"
+          : "ALTRES";
+
+      await frame.$eval(
+        HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_ULT_CONTROL,
+        (el: any, value) => (el.value = value),
+        valueDarrerControl
+      );
+
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.ID),
+        HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.VALUES[valueEstat]
+      );
+
+      if (valueEstat === "EXITUS" && valueExitusData)
+        await frame.$eval(
+          HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_EXITUS,
+          (el: any, value) => (el.value = value),
+          valueExitusData
+        );
+
+      if (valueEstat === "EXITUS" && valueCausaExitus)
+        await frame.select(
+          basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.ID),
+          HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES[
+            valueCausaExitus
+          ]
+        );
     } catch (e) {
       console.error("!!!!!!", e);
     }
