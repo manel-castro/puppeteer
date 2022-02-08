@@ -40,13 +40,10 @@ export const parseXlsx2 = (fileName: string, sheetName: string) => {
       blankrows: true,
     });
 
-    console.log(JSON.stringify(res[0], null, 2));
-
     return res;
   } catch (e) {
     return e;
   }
-  // console.log(workSheetsFromFile.data[1]);
 
   // write the same file
 };
@@ -130,6 +127,7 @@ export const searchInDDBBforNHCandDate = (
 };
 
 (async () => {
+  return;
   // get all DDBB data
   const ddbbData = await parseXlsx2(
     "assets/dataPlaOnco2019-2020",
@@ -231,15 +229,6 @@ export const searchInDDBBforNHCandDate = (
           headerFilteredData.COMMENT
         ] as string;
 
-        console.log(
-          "NOM ",
-          _tempOcurrenceFilteredSAPRow[headerFilteredData.NAME],
-          "NHC ",
-          _tempOcurrenceFilteredSAPRow[headerFilteredData.NHC],
-          " got: ",
-          _tempOccFilteredComment
-        );
-
         const regExp = new RegExp("[0-9]");
 
         const matchIndex = _tempOccFilteredComment.match(regExp)?.index;
@@ -247,23 +236,10 @@ export const searchInDDBBforNHCandDate = (
         // data format on ddbb 03-Jul-20
 
         if (!matchIndex) {
-          console.log("happened !matchIndex");
-          console.log(
-            "NOM ",
-            _tempOcurrenceFilteredSAPRow[headerFilteredData.NAME],
-            "NHC ",
-            _tempOcurrenceFilteredSAPRow[headerFilteredData.NHC],
-            " got: ",
-            _tempOccFilteredComment
-          );
-
           crossedArraySAP.push(ocurrencesRow);
-          console.log("occurrencesSap before: ", occurrencesSAP);
-
-          console.log("x is: ", x);
 
           occurrencesSAP.splice(x, 1);
-          console.log("occurrencesSap after: ", occurrencesSAP);
+
           continue;
         }
         const data = _tempOccFilteredComment.slice(
@@ -326,7 +302,6 @@ export const searchInDDBBforNHCandDate = (
           // console.log(
           //   `occurrencesBefore on index ${x}: ${occurrencesSAP.length}`
           // );
-          console.log("out of date, date: ", JSData);
 
           occurrencesSAP.splice(x, 1); // check if it works
           continue;
@@ -334,7 +309,6 @@ export const searchInDDBBforNHCandDate = (
           //   `occurrences after on index ${x}: ${occurrencesSAP.length}`
           // );
           // x = occurrencesSAP.length;
-          console.log("odd case: ", ocurrencesRow);
         }
 
         // data (format dd/mm/yy) === DATAHEP (format days from 1/1/1900)

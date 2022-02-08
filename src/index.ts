@@ -1230,13 +1230,29 @@ type ClavienDindoCountType = {
   gradeIVa: number;
   gradeIVb: number;
 };
-type ClavienDindoCountArrType = { name: string; count: number }[];
+type ClavienDindoGrades =
+  | "gradeI"
+  | "gradeII"
+  | "gradeIIIa"
+  | "gradeIIIb"
+  | "gradeIVa"
+  | "gradeIVb";
+
+type ClavienDindoCountArrType = {
+  name: ClavienDindoGrades;
+  index: number;
+  count: number;
+}[];
+
+interface ClavienDindoWeights {
+  [index: string]: number; // types not working here for indexing on .reduce ?
+}
 
 const computeClavienDindo = (
   ClavienDindoCountArr: ClavienDindoCountArrType
 ): number => {
   // returns CCI
-  const WEIGHTS = {
+  const WEIGHTS: ClavienDindoWeights = {
     gradeI: 300,
     gradeII: 1750,
     gradeIIIa: 2750,
@@ -1250,19 +1266,11 @@ const computeClavienDindo = (
     0
   );
 
-  // const weightedValue =
-  //   gradeI * WEIGHTS.gradeI +
-  //   gradeII * WEIGHTS.gradeII +
-  //   gradeIIIa * WEIGHTS.gradeIIIa +
-  //   gradeIIIb * WEIGHTS.gradeIIIb +
-  //   gradeIVa * WEIGHTS.gradeIVa +
-  //   gradeIVb * WEIGHTS.gradeIVb;
-
   return Math.sqrt(weightedValueArrRes / 2);
 };
 
 const estimateCCIInBaseMaxClavienAndTargetCCI = (
-  maxClavien: string,
+  maxClavien: ClavienDindoGrades,
   targetCCI: number,
   currentIterationValue = 0
 ): ClavienDindoCountArrType => {
@@ -1271,15 +1279,17 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
 
   const currentClavien = maxClavien;
 
-  let ClavienGradesCount = [
-    { name: "gradeI", count: maxClavien === "1" ? 1 : 0 },
-    { name: "gradeII", count: maxClavien === "2" ? 1 : 0 },
-    { name: "gradeIIIa", count: maxClavien === "3a" ? 1 : 0 },
-    { name: "gradeIIIb", count: maxClavien === "3b" ? 1 : 0 },
-    { name: "gradeIVa", count: maxClavien === "4a" ? 1 : 0 },
-    { name: "gradeIVb", count: maxClavien === "4b" ? 1 : 0 },
+  let ClavienGradesCount: ClavienDindoCountArrType = [
+    // will be only one
+    { name: "gradeI", index: 1, count: maxClavien === "gradeI" ? 1 : 0 },
+    { name: "gradeII", index: 2, count: maxClavien === "gradeII" ? 1 : 0 },
+    { name: "gradeIIIa", index: 3, count: maxClavien === "gradeIIIa" ? 1 : 0 },
+    { name: "gradeIIIb", index: 4, count: maxClavien === "gradeIIIb" ? 1 : 0 },
+    { name: "gradeIVa", index: 5, count: maxClavien === "gradeIVa" ? 1 : 0 },
+    { name: "gradeIVb", index: 6, count: maxClavien === "gradeIVb" ? 1 : 0 },
   ];
 
+  console.log("ClavienGradesCount before correction: ", ClavienGradesCount);
   currentIterationValue = computeClavienDindo(ClavienGradesCount);
 
   let isNextToTarget = false;
@@ -1298,18 +1308,23 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
   let newValue = currentIterationValue;
 
   if (targetCCI > currentIterationValue) {
-    // increase clavien dindo in decreasing way
+    const reversedGrades = ClavienGradesCount.slice().reverse();
 
-    Object.keys(ClavienGradesCount).forEach((key) => {
-      ClavienGradesCount[key];
-    });
+    for (let jx = 0; jx < reversedGrades.length; jx++) {
+      const currentGrade = reversedGrades[jx];
+      if (currentGrade.count === 0) {
+      } else {
+        const foundValue = ClavienGradesCount.find(
+          (item) => item.name === currentGrade.name
+        );
+        ++foundValue.count;
+      }
+    }
 
-    const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
-    newValue += stepSize;
+    console.log("ClavienGradesCount after correction: ", ClavienGradesCount);
   }
 
   if (targetCCI < currentIterationValue) {
-    // decrease clavien dindo in an increasing way (ommiting zeros ?!)
     const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
     newValue -= stepSize;
   }
@@ -1322,11 +1337,14 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
     (isNewValueIntoUpperBoundary && isNewValueIntoLowerBoundary);
 
   if (!isNewValueNextToTarget) {
+    return;
     estimateCCIInBaseMaxClavienAndTargetCCI(maxClavien, targetCCI, newValue);
   } else {
     return;
   }
 };
+
+estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
 
 // const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
 //   const elements = await frame.$$('input[type="text"]');
