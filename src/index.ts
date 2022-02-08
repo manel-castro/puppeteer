@@ -44,7 +44,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/72f7c850-a8da-485b-a1bc-f491333695cc",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/d79cba18-3b57-4d62-9d74-e0074019616f",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -224,7 +224,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = initialCount; i < 6; i++) {
+  for (let i = initialCount; i < 8; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -276,6 +276,8 @@ const getScrappingData = async () => {
       !ValueEras
     ) {
       const errorMessage = "Falta alguna variable, revisar";
+      console.error("errorMessage: ", errorMessage);
+
       errors.push(errorMessage);
       addToUncompletedList(currentObservation, errorMessage);
       continue;
@@ -285,7 +287,12 @@ const getScrappingData = async () => {
 
     // continue;
     // if (false)
-    if ((await ExecutePuppeteerSearch(frame, currentNHC)) !== "LOADED") {
+    const puppeterSearchResult = await ExecutePuppeteerSearch(
+      frame,
+      currentNHC
+    );
+
+    if (puppeterSearchResult !== "LOADED") {
       console.error("something went wrong");
     }
 
@@ -329,6 +336,7 @@ const getScrappingData = async () => {
         // Also might reload to go to Search and abstract search function to reuse here
         await goBackFromForm(frame);
         await goBackFromList(frame);
+
         break;
       }
     } catch (e) {
@@ -985,11 +993,12 @@ const getScrappingData = async () => {
                 valueMotiuREIQ
               ]
             ),
-            frame.select(
-              basicParseID(HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.ID),
-              HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.VALUES[valueMorbilitat]
-            ),
           ]);
+
+        await frame.select(
+          basicParseID(HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.ID),
+          HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.VALUES[valueMorbilitat]
+        );
       }
     } catch (e) {
       console.error("!!!!!!", e);
@@ -1056,7 +1065,8 @@ const getScrappingData = async () => {
           ? "PERDUA_SEGUIMENT"
           : "PERDUA_SEGUIMENT";
       const valueExitusData =
-        currentObservation[HEADERS_LIVER_DDBB.DataEXITUS] || "";
+        formatDate(currentObservation[HEADERS_LIVER_DDBB.DataEXITUS]) ||
+        "00/00/2000";
 
       // Causa exitus:
       const _perComplPostOP =
@@ -1116,7 +1126,7 @@ const getScrappingData = async () => {
     await saveForm(frame);
     await goBackFromList(frame);
 
-    await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
+    // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
 
     // GOBACK METHODS
     // METHOD 1:
@@ -1153,25 +1163,33 @@ const addToUncompletedList = async (
   currentObservation: any,
   errorType: string
 ) => {
-  const ddbbData = await parseXlsx2("register/uncompletedRegister", "Sheet1");
-
-  const data = [...ddbbData];
+  const ddbbData = await parseXlsx2(
+    "register/uncompletedRegister",
+    "uncompletedRegister"
+  );
 
   const timestamp = new Date(Date.now());
-  data.push({ ...currentObservation, timestamp, errorType });
 
-  buildXlsxFile2("uncompletedRegister", data, "register");
+  buildXlsxFile2(
+    "uncompletedRegister",
+    [...(ddbbData as any[]), { ...currentObservation, timestamp, errorType }],
+    "register"
+  );
 };
 
 const addToCompletedList = async (currentObservation: any) => {
-  const ddbbData = await parseXlsx2("register/completedRegister", "Sheet1");
-
-  const data = [...ddbbData];
+  const ddbbData = await parseXlsx2(
+    "register/completedRegister",
+    "completedRegister"
+  );
 
   const timestamp = new Date(Date.now());
-  data.push({ ...currentObservation, timestamp });
 
-  buildXlsxFile2("completedRegister", data, "register");
+  buildXlsxFile2(
+    "completedRegister",
+    [...ddbbData, { ...currentObservation, timestamp }],
+    "register"
+  );
 };
 
 const registerCurrentObservationNumber = (currentObsNum: number) => {
