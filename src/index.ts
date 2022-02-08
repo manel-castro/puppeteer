@@ -1137,7 +1137,7 @@ const getScrappingData = async () => {
   }
 };
 
-getScrappingData();
+// getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1206,30 +1206,125 @@ const readLastObservationNumber = (): number => {
   return parseInt(fs.readFileSync("register/lastObservationNum.txt", "utf-8"));
 };
 
-const iterationCCIEstimation = (current: number) => {};
+const iterationCCIEstimation = (
+  currentIterationValue: number,
+  targetCCI: number,
+  errorMargin: number
+) => {
+  if (targetCCI > currentIterationValue) {
+    const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
+    return currentIterationValue + stepSize;
+  }
+
+  if (targetCCI < currentIterationValue) {
+    const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
+    return currentIterationValue - stepSize;
+  }
+};
+
+type ClavienDindoCountType = {
+  gradeI: number;
+  gradeII: number;
+  gradeIIIa: number;
+  gradeIIIb: number;
+  gradeIVa: number;
+  gradeIVb: number;
+};
+type ClavienDindoCountArrType = { name: string; count: number }[];
+
+const computeClavienDindo = (
+  ClavienDindoCountArr: ClavienDindoCountArrType
+): number => {
+  // returns CCI
+  const WEIGHTS = {
+    gradeI: 300,
+    gradeII: 1750,
+    gradeIIIa: 2750,
+    gradeIIIb: 4550,
+    gradeIVa: 7200,
+    gradeIVb: 8550,
+  };
+
+  const weightedValueArrRes = ClavienDindoCountArr.reduce(
+    (prev, current) => prev + current.count * WEIGHTS[current.name],
+    0
+  );
+
+  // const weightedValue =
+  //   gradeI * WEIGHTS.gradeI +
+  //   gradeII * WEIGHTS.gradeII +
+  //   gradeIIIa * WEIGHTS.gradeIIIa +
+  //   gradeIIIb * WEIGHTS.gradeIIIb +
+  //   gradeIVa * WEIGHTS.gradeIVa +
+  //   gradeIVb * WEIGHTS.gradeIVb;
+
+  return Math.sqrt(weightedValueArrRes / 2);
+};
 
 const estimateCCIInBaseMaxClavienAndTargetCCI = (
   maxClavien: string,
-  targetCCI: number
-) => {
+  targetCCI: number,
+  currentIterationValue = 0
+): ClavienDindoCountArrType => {
+  // returns: clavien dindo combinations!
   const errorMargin = 0.1;
-  const currentIterationValue = 0;
+
+  const currentClavien = maxClavien;
+
+  let ClavienGradesCount = [
+    { name: "gradeI", count: maxClavien === "1" ? 1 : 0 },
+    { name: "gradeII", count: maxClavien === "2" ? 1 : 0 },
+    { name: "gradeIIIa", count: maxClavien === "3a" ? 1 : 0 },
+    { name: "gradeIIIb", count: maxClavien === "3b" ? 1 : 0 },
+    { name: "gradeIVa", count: maxClavien === "4a" ? 1 : 0 },
+    { name: "gradeIVb", count: maxClavien === "4b" ? 1 : 0 },
+  ];
+
+  currentIterationValue = computeClavienDindo(ClavienGradesCount);
 
   let isNextToTarget = false;
   const upperBoundary = targetCCI * (1 + errorMargin);
   const lowerBoundary = targetCCI / (1 + errorMargin);
 
-  while (isNextToTarget) {
-    const isIntoUpperBoundary = currentIterationValue < upperBoundary;
-    const isIntoLowerBoundary = currentIterationValue > lowerBoundary;
+  const isIntoUpperBoundary = currentIterationValue < upperBoundary;
+  const isIntoLowerBoundary = currentIterationValue > lowerBoundary;
 
-    isNextToTarget =
-      currentIterationValue === targetCCI ||
-      (isIntoLowerBoundary && isIntoUpperBoundary);
+  isNextToTarget =
+    currentIterationValue === targetCCI ||
+    (isIntoLowerBoundary && isIntoUpperBoundary);
 
-    // if( > currentIterationValue)
+  if (isNextToTarget) return ClavienGradesCount;
 
-    // if(targetCCI < currentIterationValue)
+  let newValue = currentIterationValue;
+
+  if (targetCCI > currentIterationValue) {
+    // increase clavien dindo in decreasing way
+
+    Object.keys(ClavienGradesCount).forEach((key) => {
+      ClavienGradesCount[key];
+    });
+
+    const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
+    newValue += stepSize;
+  }
+
+  if (targetCCI < currentIterationValue) {
+    // decrease clavien dindo in an increasing way (ommiting zeros ?!)
+    const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
+    newValue -= stepSize;
+  }
+
+  const isNewValueIntoUpperBoundary = newValue < upperBoundary;
+  const isNewValueIntoLowerBoundary = newValue > lowerBoundary;
+
+  const isNewValueNextToTarget =
+    newValue === targetCCI ||
+    (isNewValueIntoUpperBoundary && isNewValueIntoLowerBoundary);
+
+  if (!isNewValueNextToTarget) {
+    estimateCCIInBaseMaxClavienAndTargetCCI(maxClavien, targetCCI, newValue);
+  } else {
+    return;
   }
 };
 
