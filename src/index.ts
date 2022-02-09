@@ -44,7 +44,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/d79cba18-3b57-4d62-9d74-e0074019616f",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/b855bcb8-98e3-4929-ac97-353253752c22",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -224,7 +224,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = initialCount; i < 8; i++) {
+  for (let i = 1; i < 3; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -251,11 +251,14 @@ const getScrappingData = async () => {
       -50
     ); // !!
 
-    const Estada = currentObservation[HEADERS_LIVER_DDBB.ESTADA];
+    const ValueEstada = currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0";
+
+    console.log("ValueEstada: ", ValueEstada);
+    console.log("parseInt(ValueEstada): ", parseInt(ValueEstada));
 
     const ValueDataAlta = addDaysToMilisecondsAndGetDate(
       ValueDataIngres,
-      parseInt(Estada)
+      parseInt(ValueEstada)
     );
 
     // !! estada not always defined
@@ -700,7 +703,7 @@ const getScrappingData = async () => {
 
     const numMH = currentObservation[HEADERS_LIVER_DDBB.NMETIMAGpre];
     const MHMajorDiam = Math.round(
-      parseInt(currentObservation[HEADERS_LIVER_DDBB.MIDAMHIMATGE]) * 10
+      parseFloat(currentObservation[HEADERS_LIVER_DDBB.MIDAMHIMATGE]) * 10
     ).toString();
 
     try {
@@ -1013,11 +1016,20 @@ const getScrappingData = async () => {
       const valueAffMargeResAP = currentObservation[HEADERS_LIVER_DDBB.INVMARG];
       const valueDistMargeResAP =
         Math.round(
-          parseInt(currentObservation[HEADERS_LIVER_DDBB.MARGEN])
+          parseFloat(currentObservation[HEADERS_LIVER_DDBB.MARGEN])
         ).toString() || "0";
       const valueNumMetAP = currentObservation[HEADERS_LIVER_DDBB.NMETAP] || 0;
+
+      const midaApStr = currentObservation[HEADERS_LIVER_DDBB.MIDAAP];
+      console.log("midaApStr: ", midaApStr);
+
+      const midaApIntMm = parseFloat(midaApStr) * 10;
+      console.log("midaApIntMm: ", midaApIntMm);
+      const midaApRoundedMm = Math.round(midaApIntMm);
+      console.log("midaApRoundedMm: ", midaApRoundedMm);
+
       const valueMidaMaxMetAP = Math.round(
-        (parseInt(currentObservation[HEADERS_LIVER_DDBB.MIDAAP]) || 0) * 10
+        (parseFloat(currentObservation[HEADERS_LIVER_DDBB.MIDAAP]) || 0) * 10
       ).toString();
 
       await frame.select(
@@ -1123,6 +1135,8 @@ const getScrappingData = async () => {
     console.log(currentNHC, " added to completed register");
     console.log("SAVING AND GOING TO SEARCH FORM");
 
+    frame.waitForNavigation();
+    break;
     await saveForm(frame);
     await goBackFromList(frame);
 
@@ -1137,7 +1151,7 @@ const getScrappingData = async () => {
   }
 };
 
-// getScrappingData();
+getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1344,7 +1358,7 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
   }
 };
 
-estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
+// estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
 
 // const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
 //   const elements = await frame.$$('input[type="text"]');
