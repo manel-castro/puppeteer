@@ -66,6 +66,16 @@ export const HTML_IDS_LIVER = {
       LOCOREGIONAL_AND_QUIRURGIC: "3",
     },
   },
+  LOCOREGIONAL: {
+    ID: "form:INPUT_6779_44691_166943",
+    VALUES: {
+      NO: "0",
+      RF: "2",
+      mw: "1",
+      ALTRES: "4",
+      NOCONSTA: "9",
+    },
+  },
   ACCESS_IQ: {
     ID: "#form\\3A INPUT_6779_44691_137973",
     VALUES: {

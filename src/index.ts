@@ -44,7 +44,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/b855bcb8-98e3-4929-ac97-353253752c22",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/f4a287dc-ea3b-43ef-8e8d-e751b43fcad6",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -224,7 +224,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 1; i < 3; i++) {
+  for (let i = 0; i < 2; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -582,8 +582,8 @@ const getScrappingData = async () => {
       continue;
     }
 
-    const ValueRadio = strValueRadio === "Si" ? true : false;
-    const ValueMW = strValueMW === "Si" ? true : false;
+    const ValueRadio = strValueRadio.includes("Si") ? true : false;
+    const ValueMW = strValueMW.includes("Si") ? true : false;
 
     const tecnicaIsQuirurgicUnicament =
       wasIQ &&
@@ -594,6 +594,11 @@ const getScrappingData = async () => {
       tecnicaIsQuirurgicUnicament && (ValueRadio || ValueMW)
         ? "LOCOREGIONAL_AND_QUIRURGIC"
         : "QUIRURGIC_ONLY"; // no data for Locoregional Only, done by Hospitals without resources
+
+    console.log("ValueRadio: ", ValueRadio);
+    console.log("ValueMW: ", ValueMW);
+    console.log("tecnicaIsQuirurgicUnicament: ", tecnicaIsQuirurgicUnicament);
+    console.log("ValueTractamentHepátic: ", ValueTractamentHepátic);
 
     try {
       await Promise.all([
@@ -609,6 +614,15 @@ const getScrappingData = async () => {
       ]);
 
       frame.waitForNavigation();
+
+      if (ValueTractamentHepátic === "LOCOREGIONAL_AND_QUIRURGIC") {
+        await frame.select(
+          HTML_IDS_LIVER.LOCOREGIONAL.ID,
+          HTML_IDS_LIVER.LOCOREGIONAL.VALUES[
+            ValueRadio ? "RF" : ValueMW ? "mw" : "NOCONSTA"
+          ]
+        );
+      }
 
       // await frame.waitForNavigation(); // formulary might change
     } catch (e) {
@@ -945,13 +959,14 @@ const getScrappingData = async () => {
         const clavienGrau = currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN];
         const valueEstadaUCIREA =
           clavienGrau &&
-          (clavienGrau === "IVa" ||
+          (clavienGrau === "IIIb" ||
+            clavienGrau === "IVa" ||
             clavienGrau === "IVb" ||
-            clavienGrau === "V"); // PK: !! Causa REIQ??? || Grau Clavien Dindo  >= 4
+            clavienGrau === "V"); // nomes hi ha un // PK: !! Causa REIQ??? || Grau Clavien Dindo  >= 4
         const valueTempsUCIREA = "0"; // PK: induir:  Temps normal d'estada + alta ????
         const valueREIQ = currentObservation[HEADERS_LIVER_DDBB.REIQ];
-        const valueDataREIQ = "00/00/2000";
-        const valueMotiuREIQ = "PER_COMPLICACIO"; //! PK: Sempre será per Altres Complicacions postOp ???
+        const valueDataREIQ = "00/00/2000"; // nomes hi ha un
+        const valueMotiuREIQ = "PER_COMPLICACIO"; //! PK: Sempre será per Altres Complicacions postOp = Resposta -> SI ???
 
         const valueMorbilitat = "SI";
 
@@ -1082,12 +1097,18 @@ const getScrappingData = async () => {
 
       // Causa exitus:
       const _perComplPostOP =
-        currentObservation[HEADERS_LIVER_DDBB.MORTALITAT] === "Si";
+        currentObservation[HEADERS_LIVER_DDBB.MORTALITAT] === "Si"; // nomes clavien V
       const _perRecidiva =
         currentObservation[HEADERS_LIVER_DDBB.RECHEP] === "Si"; //?? PK
       const _recidibaPulmonar = currentObservation[HEADERS_LIVER_DDBB.RECPUL]; //?? PK
       const _perProgressioTumoral =
         _recidibaPulmonar && _recidibaPulmonar.includes("Progressió");
+
+      // mort amb recidiva / tumor : estat == Mort (amb recidiva)
+      // dintre d'aquestos:
+      // recidiva == 3 = sempre ha tingut tumor => per progessio del tumor
+      // recidiva == 1 = recidiva => per progessio recidiva
+      // altres: altres
 
       const valueCausaExitus: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES =
         _perProgressioTumoral
