@@ -541,87 +541,42 @@ export const pTNMRelationsSquamousCarcinoma: pTNMRelation[] = [
 ];
 
 type ypTNMRelation = {
-  result: pTNMType;
-  T: pTtype;
-  N?: pNtype;
-  M?: pMtype;
+  result: ypTNMType;
+  T: ypTtype;
+  N?: ypNtype;
+  M?: ypMtype;
 };
 
-export type ypTNMType =
-  | "Ia"
-  | "Ib"
-  | "Ic"
-  | "IIa"
-  | "IIb"
-  | "IIIa"
-  | "IIIb"
-  | "IVa"
-  | "IVb";
-export type ypTtype = "0" | "Tis" | "1a" | "1b" | "2" | "3" | "4a" | "4b";
-export type ypNtype = "0" | "1" | "2" | "3" | "+" | "-";
+export type ypTNMType = "I" | "II" | "IIIa" | "IIIb" | "IVa" | "IVb";
+export type ypTtype = "0" | "Tis" | "1" | "2" | "3" | "4a" | "4b";
+export type ypNtype = pNtype;
 export type ypMtype = pMtype;
 
-export const ypTNMRelations: pTNMRelation[] = [
+export const ypTNMRelations: ypTNMRelation[] = [
   {
-    result: "Ia",
-    differentiationGrade: "G1",
-    T: "1a",
+    result: "I",
+    T: "0",
     N: "0",
   },
   {
-    result: "Ib",
-    differentiationGrade: "G2",
-    T: "1a",
+    result: "I",
+    T: "Tis",
     N: "0",
   },
   {
-    result: "Ic",
-    differentiationGrade: "G3",
-    T: "1a",
+    result: "I",
+    T: "1",
     N: "0",
   },
   {
-    result: "Ib",
-    T: "1b",
-    N: "0",
-  },
-  {
-    result: "Ib",
-    differentiationGrade: "G1",
+    result: "I",
     T: "2",
     N: "0",
   },
   {
-    result: "IIa",
-    differentiationGrade: "G2",
-    T: "2",
-    N: "0",
-  },
-  {
-    result: "IIa",
-    differentiationGrade: "G3",
-    T: "2",
-    N: "0",
-  },
-  {
-    result: "IIa",
+    result: "II",
     T: "3",
     N: "0",
-    differentiationGrade: "G1",
-  },
-  {
-    result: "IIa",
-    T: "3",
-    N: "0",
-    differentiationGrade: "G2",
-    // this one might be result IIb, if U/M
-  },
-  {
-    result: "IIa",
-    T: "3",
-    N: "0",
-    differentiationGrade: "G3",
-    // this one might be result IIb, if U/M
   },
   {
     result: "IIIb",
@@ -636,13 +591,18 @@ export const ypTNMRelations: pTNMRelation[] = [
 
   // n1
   {
-    result: "IIb",
-    T: "1a",
+    result: "IIIa",
+    T: "0",
     N: "1",
   },
   {
-    result: "IIb",
-    T: "1b",
+    result: "IIIa",
+    T: "Tis",
+    N: "1",
+  },
+  {
+    result: "IIIa",
+    T: "1",
     N: "1",
   },
   {
@@ -656,7 +616,7 @@ export const ypTNMRelations: pTNMRelation[] = [
     N: "1",
   },
   {
-    result: "IIIb",
+    result: "IVa",
     T: "4a",
     N: "1",
   },
@@ -668,13 +628,18 @@ export const ypTNMRelations: pTNMRelation[] = [
 
   // n2
   {
-    result: "IIIa",
-    T: "1a",
+    result: "IIIb",
+    T: "0",
     N: "2",
   },
   {
-    result: "IIIa",
-    T: "1b",
+    result: "IIIb",
+    T: "Tis",
+    N: "2",
+  },
+  {
+    result: "IIIb",
+    T: "1",
     N: "2",
   },
   {
@@ -702,12 +667,17 @@ export const ypTNMRelations: pTNMRelation[] = [
 
   {
     result: "IVa",
-    T: "1a",
+    T: "0",
     N: "3",
   },
   {
     result: "IVa",
-    T: "1b",
+    T: "Tis",
+    N: "3",
+  },
+  {
+    result: "IVa",
+    T: "1",
     N: "3",
   },
   {
@@ -734,12 +704,17 @@ export const ypTNMRelations: pTNMRelation[] = [
   // M1
   {
     result: "IVb",
-    T: "1a",
+    T: "0",
     M: "1",
   },
   {
     result: "IVb",
-    T: "1b",
+    T: "Tis",
+    M: "1",
+  },
+  {
+    result: "IVb",
+    T: "1",
     M: "1",
   },
   {
