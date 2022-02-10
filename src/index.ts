@@ -19,6 +19,9 @@ import {
   cTNMRelationsAdenocarcinoma,
   cTNMRelationsSquamousCarcinoma,
   cTtype,
+  pDifferentiationGradeType,
+  pTNMRelationsAdenocarcinoma,
+  pTtype,
 } from "./consts/TNMRelations";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1398,9 +1401,9 @@ type TNMType = {
   cancerType: "adenocarcinoma" | "squamousCarcinoma";
   isPathologic?: boolean;
   isTreatedBefore?: boolean;
-  gradeOfDifferentiation?: 1 | 2 | 3;
-  T: cTtype;
-  N: cNtype;
+  gradeOfDifferentiation?: pDifferentiationGradeType;
+  T: cTtype | pTtype;
+  N?: cNtype | cTtype;
   M?: "0" | "1";
 };
 const computeStageFromTNM = ({
@@ -1431,14 +1434,66 @@ const computeStageFromTNM = ({
         ).result
       );
     }
+  } else {
+    // is pathological evaluation
+    if (isTreatedBefore) {
+      // common for adenocarcinoma and squamousCarcinoma
+    }
+
+    if (cancerType === "adenocarcinoma") {
+      return (
+        "STAGE " +
+        pTNMRelationsAdenocarcinoma.find(
+          (item) =>
+            (item.N ? item.N === N : item.M === M) &&
+            item.T === T &&
+            (item.differentiationGrade
+              ? item.differentiationGrade === gradeOfDifferentiation
+              : true)
+        ).result
+      );
+    }
+    if (cancerType === "squamousCarcinoma") {
+      return (
+        "STAGE " +
+        pTNMRelationsAdenocarcinoma.find(
+          (item) =>
+            (item.N ? item.N === N : item.M === M) &&
+            item.T === T &&
+            (item.differentiationGrade
+              ? item.differentiationGrade === gradeOfDifferentiation
+              : true)
+        ).result
+      );
+    }
   }
 };
 
 console.log(
   computeStageFromTNM({
-    T: "3",
-    N: "+",
-    cancerType: "squamousCarcinoma",
+    T: "1b",
+    M: "1",
+    gradeOfDifferentiation: "G1",
+    isPathologic: true,
+    cancerType: "adenocarcinoma",
+  })
+);
+console.log(
+  computeStageFromTNM({
+    T: "1b",
+    N: "0",
+    gradeOfDifferentiation: "G2",
+    isPathologic: true,
+    cancerType: "adenocarcinoma",
+  })
+);
+console.log(
+  computeStageFromTNM({
+    T: "1b",
+    N: "0",
+    gradeOfDifferentiation: "G3",
+    isPathologic: true,
+    cancerType: "adenocarcinoma",
   })
 );
 
