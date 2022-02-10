@@ -22,6 +22,7 @@ import {
   pDifferentiationGradeType,
   pTNMRelationsAdenocarcinoma,
   pTtype,
+  ypTNMRelations,
 } from "./consts/TNMRelations";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1438,6 +1439,12 @@ const computeStageFromTNM = ({
     // is pathological evaluation
     if (isTreatedBefore) {
       // common for adenocarcinoma and squamousCarcinoma
+      return (
+        "STAGE " +
+        ypTNMRelations.find(
+          (item) => (item.N ? item.N === N : item.M === M) && item.T === T
+        ).result
+      );
     }
 
     if (cancerType === "adenocarcinoma") {
