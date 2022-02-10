@@ -568,12 +568,10 @@ export const HEADERS_LIVER_DDBB = {
     const upperDateLimit = new Date(2020, 11, 32);
     const lowerDateLimit = new Date(2019, 0, 2);
 
-    console.log("upperDateLimit: ", upperDateLimit);
-    console.log("lowerDateLimit: ", lowerDateLimit);
-
     if (parsedDate > upperDateLimit || parsedDate < lowerDateLimit) continue;
 
-    continue;
+    // check how many observations are left
+
     const tipoHistologico: cancerTypeForTNM =
       currentObservation["Tipo histológico"] === "Adenocarcinoma"
         ? "adenocarcinoma"
@@ -598,15 +596,16 @@ export const HEADERS_LIVER_DDBB = {
 
     const pT = currentObservation["Estadio patológico pT"];
     const pN = currentObservation["Estadio patológico pN"]; // two equal columns
+    const pN_ = currentObservation["Estadio patológico pN_1"]; // two equal columns
     const pM = currentObservation["Estadio patológico M"];
     const gradoDiferenciación = currentObservation["Grado de diferenciación"]; // Pregunta: se puede asumir algo cuando celda vacia??
-    if (!cT || !cN || !pT || !pN || !pM || !gradoDiferenciación) {
+    if (!cT || !cN || !pT || (!pN && !pN_) || !pM) {
       // console.error("Missing TNM inputs for ID:  ", pacientCode);
       continue;
     }
 
     console.log(`cTNM: ${cT}${cN}`);
-    console.log(`pTNM: ${pT}${pN}${pM}`);
+    console.log(`pTNM: ${pT}${pN || pN_}${pM}`);
 
     const hadNeoadjuvantTreatment =
       currentObservation["Tratamiento neodyuvante"] !== "NO";
