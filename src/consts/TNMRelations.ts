@@ -1,4 +1,14 @@
-export const cTNMRelationsAdenocarcinoma = [
+type TNMRelation = {
+  result: cTNMType;
+  T: cTtype;
+  N: cNtype;
+};
+
+export type cTNMType = "I" | "IIa" | "IIb" | "III" | "IVa" | "IVb";
+export type cTtype = "1" | "2" | "3" | "4a" | "4b";
+export type cNtype = "0" | "1" | "2" | "3" | "+" | "-";
+
+export const cTNMRelationsAdenocarcinoma: TNMRelation[] = [
   {
     result: "I",
     T: "1",
@@ -51,7 +61,7 @@ export const cTNMRelationsAdenocarcinoma = [
   },
 ];
 
-export const cTNMRelationsSquamousCarcinoma = [
+export const cTNMRelationsSquamousCarcinoma: TNMRelation[] = [
   {
     result: "I",
     T: "1",

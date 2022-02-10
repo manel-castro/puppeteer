@@ -14,6 +14,12 @@ import { GENERAL_CONSTS, INTERFACE_IDS } from "./consts/general";
 import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
 import { parseXlsx } from "./excel-functions";
 import { parseXlsx2 } from "./crossDataGood";
+import {
+  cNtype,
+  cTNMRelationsAdenocarcinoma,
+  cTNMRelationsSquamousCarcinoma,
+  cTtype,
+} from "./consts/TNMRelations";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -1393,8 +1399,8 @@ type TNMType = {
   isPathologic: boolean;
   isTreatedBefore: boolean;
   gradeOfDifferentiation?: 1 | 2 | 3;
-  T: "1" | "2" | "3" | "4a" | "4b";
-  N: "0" | "1" | "2" | "3" | "+" | "-";
+  T: cTtype;
+  N: cNtype;
   M?: "0" | "1";
 };
 const computeStageFromTNM = ({
@@ -1406,58 +1412,19 @@ const computeStageFromTNM = ({
   N,
   M,
 }: TNMType) => {
-  const cTNMRelations = [
-    {
-      result: "I",
-      T: "1",
-      N: "-",
-    },
-    {
-      result: "IIa",
-      T: "1",
-      N: "+",
-    },
-    {
-      result: "IIb",
-      T: "2",
-      N: "-",
-    },
-    {
-      result: "III",
-      T: "3",
-      N: "-",
-    },
-    {
-      result: "III",
-      T: "4a",
-      N: "-",
-    },
-    {
-      result: "III",
-      T: "2",
-      N: "+",
-    },
-    {
-      result: "III",
-      T: "3",
-      N: "+",
-    },
-    {
-      result: "III",
-      T: "4a",
-      N: "+",
-    },
-    {
-      result: "IVa",
-      T: "4b",
-      N: "-",
-    },
-    {
-      result: "IVa",
-      T: "4b",
-      N: "+",
-    },
-  ];
+  if (!isPathologic) {
+    // is clinical evaluation
+    if (cancerType === "adenocarcinoma") {
+      return cTNMRelationsAdenocarcinoma.find(
+        (item) => item.N === N && item.T === T
+      ).result;
+    }
+    if (cancerType === "squamousCarcinoma") {
+      return cTNMRelationsSquamousCarcinoma.find(
+        (item) => item.N === N && item.T === T
+      ).result;
+    }
+  }
 };
 
 // estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
