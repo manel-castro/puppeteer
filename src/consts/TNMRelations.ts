@@ -4,7 +4,7 @@ type TNMRelation = {
   N: cNtype;
 };
 
-export type cTNMType = "I" | "IIa" | "IIb" | "III" | "IVa" | "IVb";
+export type cTNMType = "I" | "II" | "IIa" | "IIb" | "III" | "IVa" | "IVb";
 export type cTtype = "1" | "2" | "3" | "4a" | "4b";
 export type cNtype = "0" | "1" | "2" | "3" | "+" | "-";
 

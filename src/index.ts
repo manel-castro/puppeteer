@@ -1396,8 +1396,8 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
 
 type TNMType = {
   cancerType: "adenocarcinoma" | "squamousCarcinoma";
-  isPathologic: boolean;
-  isTreatedBefore: boolean;
+  isPathologic?: boolean;
+  isTreatedBefore?: boolean;
   gradeOfDifferentiation?: 1 | 2 | 3;
   T: cTtype;
   N: cNtype;
@@ -1414,18 +1414,33 @@ const computeStageFromTNM = ({
 }: TNMType) => {
   if (!isPathologic) {
     // is clinical evaluation
+    if (N === "1") N = "+";
+    if (N === "0") N = "-";
     if (cancerType === "adenocarcinoma") {
-      return cTNMRelationsAdenocarcinoma.find(
-        (item) => item.N === N && item.T === T
-      ).result;
+      return (
+        "STAGE " +
+        cTNMRelationsAdenocarcinoma.find((item) => item.N === N && item.T === T)
+          .result
+      );
     }
     if (cancerType === "squamousCarcinoma") {
-      return cTNMRelationsSquamousCarcinoma.find(
-        (item) => item.N === N && item.T === T
-      ).result;
+      return (
+        "STAGE " +
+        cTNMRelationsSquamousCarcinoma.find(
+          (item) => item.N === N && item.T === T
+        ).result
+      );
     }
   }
 };
+
+console.log(
+  computeStageFromTNM({
+    T: "3",
+    N: "+",
+    cancerType: "squamousCarcinoma",
+  })
+);
 
 // estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
 
