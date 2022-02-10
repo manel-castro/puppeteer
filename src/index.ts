@@ -44,7 +44,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/f4a287dc-ea3b-43ef-8e8d-e751b43fcad6",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/5295cd51-359a-4240-a316-586cc948e467",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -224,12 +224,23 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 0; i < 2; i++) {
+  for (let i = 46; i < 48; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
 
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
+    const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
+    const isSecondObs = currentLastName.includes("2");
+
+    console.log("name is: ", currentLastName);
+
+    if (isSecondObs) {
+      console.log("ommiting, is second observation");
+
+      await addToUncompletedList(currentObservation, "Is Second Observation");
+      continue;
+    }
 
     // const _formNHC = (await (
     //   await (
@@ -251,7 +262,7 @@ const getScrappingData = async () => {
       -50
     ); // !!
 
-    const ValueEstada = currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0";
+    const ValueEstada = currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0"; // minim temps d'estada?
 
     console.log("ValueEstada: ", ValueEstada);
     console.log("parseInt(ValueEstada): ", parseInt(ValueEstada));
@@ -270,14 +281,7 @@ const getScrappingData = async () => {
     const ValueEcog = "NO-VALORAT"; //??
     const ValueEras = "NO"; //??
 
-    if (
-      !ValueEdatIQ ||
-      !ValuePes ||
-      !ValueTalla ||
-      !ValueASA ||
-      !ValueEcog ||
-      !ValueEras
-    ) {
+    if (!ValueEdatIQ || !ValuePes || !ValueTalla || !ValueASA) {
       const errorMessage = "Falta alguna variable, revisar";
       console.error("errorMessage: ", errorMessage);
 
@@ -300,7 +304,7 @@ const getScrappingData = async () => {
     }
 
     // GO to list item form
-    const currentItemId = LINK_LIST_ITEM(i);
+    const currentItemId = LINK_LIST_ITEM(0);
     // if (false)
     try {
       await Promise.all([
@@ -590,10 +594,12 @@ const getScrappingData = async () => {
       ValueTecnica.includes("hepatectomia major") &&
       ValueTecnica.includes("resecció");
 
-    const ValueTractamentHepátic =
-      tecnicaIsQuirurgicUnicament && (ValueRadio || ValueMW)
+    const ValueTractamentHepátic: keyof typeof HTML_IDS_LIVER.TRACTAMENT_H.VALUES =
+      ValueTecnica && !ValueRadio && !ValueMW
+        ? "QUIRURGIC_ONLY" // no data for Locoregional Only, done by Hospitals without resources
+        : ValueTecnica && (ValueRadio || ValueMW)
         ? "LOCOREGIONAL_AND_QUIRURGIC"
-        : "QUIRURGIC_ONLY"; // no data for Locoregional Only, done by Hospitals without resources
+        : "LOCOREGIONAL_ONLY";
 
     console.log("ValueRadio: ", ValueRadio);
     console.log("ValueMW: ", ValueMW);
@@ -615,9 +621,12 @@ const getScrappingData = async () => {
 
       frame.waitForNavigation();
 
-      if (ValueTractamentHepátic === "LOCOREGIONAL_AND_QUIRURGIC") {
+      if (
+        ValueTractamentHepátic === "LOCOREGIONAL_AND_QUIRURGIC" ||
+        ValueTractamentHepátic === "LOCOREGIONAL_ONLY"
+      ) {
         await frame.select(
-          HTML_IDS_LIVER.LOCOREGIONAL.ID,
+          basicParseID(HTML_IDS_LIVER.LOCOREGIONAL.ID),
           HTML_IDS_LIVER.LOCOREGIONAL.VALUES[
             ValueRadio ? "RF" : ValueMW ? "mw" : "NOCONSTA"
           ]
@@ -1172,7 +1181,7 @@ const getScrappingData = async () => {
   }
 };
 
-getScrappingData();
+// getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1377,6 +1386,78 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
   } else {
     return;
   }
+};
+
+type TNMType = {
+  cancerType: "adenocarcinoma" | "squamousCarcinoma";
+  isPathologic: boolean;
+  isTreatedBefore: boolean;
+  gradeOfDifferentiation?: 1 | 2 | 3;
+  T: "1" | "2" | "3" | "4a" | "4b";
+  N: "0" | "1" | "2" | "3" | "+" | "-";
+  M?: "0" | "1";
+};
+const computeStageFromTNM = ({
+  cancerType,
+  isPathologic = false,
+  isTreatedBefore = false,
+  gradeOfDifferentiation,
+  T,
+  N,
+  M,
+}: TNMType) => {
+  const cTNMRelations = [
+    {
+      result: "I",
+      T: "1",
+      N: "-",
+    },
+    {
+      result: "IIa",
+      T: "1",
+      N: "+",
+    },
+    {
+      result: "IIb",
+      T: "2",
+      N: "-",
+    },
+    {
+      result: "III",
+      T: "3",
+      N: "-",
+    },
+    {
+      result: "III",
+      T: "4a",
+      N: "-",
+    },
+    {
+      result: "III",
+      T: "2",
+      N: "+",
+    },
+    {
+      result: "III",
+      T: "3",
+      N: "+",
+    },
+    {
+      result: "III",
+      T: "4a",
+      N: "+",
+    },
+    {
+      result: "IVa",
+      T: "4b",
+      N: "-",
+    },
+    {
+      result: "IVa",
+      T: "4b",
+      N: "+",
+    },
+  ];
 };
 
 // estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
