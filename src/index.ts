@@ -901,25 +901,34 @@ const getScrappingData = async () => {
         // *****************
         const valueInsufHepatica =
           currentObservation[HEADERS_LIVER_DDBB.INSUFHEPisgls];
+
+        console.log("valueInsufHepatica: ", valueInsufHepatica);
+
         const valueInsufHepaticaGrau =
           currentObservation[HEADERS_LIVER_DDBB.GrauIH];
+        console.log("valueInsufHepaticaGrau: ", valueInsufHepaticaGrau);
         const valueFistulaBil = currentObservation[HEADERS_LIVER_DDBB.FISTBILI];
+        console.log("valueFistulaBil: ", valueFistulaBil);
         const valueFistulaBilGrau =
           currentObservation[HEADERS_LIVER_DDBB.GRAUFB];
+        console.log("valueFistulaBilGrau: ", valueFistulaBilGrau);
         const valueFistulaBilDebitDiari = "0";
         const valueCalDrenatge =
           currentObservation[HEADERS_LIVER_DDBB.INFESPAI];
+        console.log("valueCalDrenatge: ", valueCalDrenatge);
         const valueHemoper = currentObservation[HEADERS_LIVER_DDBB.HEMOPER];
+        console.log("valueHemoper: ", valueHemoper);
         const valueAscitis = currentObservation[HEADERS_LIVER_DDBB.ASCITIS];
+        console.log("valueAscitis: ", valueAscitis);
 
         await frame.select(
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.ID),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.VALUES[
-            NoSiParse(valueInsufHepatica)
+            NoSiParse(AsumeNoIfUnknown(valueInsufHepatica))
           ]
         );
 
-        if (valueInsufHepatica === "Si" && valueInsufHepatica)
+        if (valueInsufHepatica === "SI" && valueInsufHepatica)
           await frame.select(
             basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.ID),
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.VALUES[
@@ -929,7 +938,7 @@ const getScrappingData = async () => {
         await frame.select(
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.ID),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.VALUES[
-            NoSiParse(valueFistulaBil)
+            NoSiParse(AsumeNoIfUnknown(valueFistulaBil))
           ]
         );
         if (valueFistulaBilGrau === "Si" && valueFistulaBilDebitDiari) {
@@ -952,7 +961,7 @@ const getScrappingData = async () => {
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE.ID
           ),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
-            .VALUES[NoSiParse(valueCalDrenatge)]
+            .VALUES[NoSiParse(AsumeNoIfUnknown(valueCalDrenatge))]
         );
         await frame.select(
           basicParseID(
@@ -960,13 +969,13 @@ const getScrappingData = async () => {
               .HEMOPERITONEU_POST_IQ_REINTERVENCIO.ID
           ),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.HEMOPERITONEU_POST_IQ_REINTERVENCIO
-            .VALUES[NoSiParse(valueHemoper)]
+            .VALUES[NoSiParse(AsumeNoIfUnknown(valueHemoper))]
         );
 
         await frame.select(
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.ID),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.VALUES[
-            NoSiParse(valueAscitis)
+            NoSiParse(AsumeNoIfUnknown(valueAscitis))
           ]
         );
 
@@ -1201,6 +1210,8 @@ const basicParseID = (noParsedId: string) => {
 
 const NoSiParse = (val: string) =>
   val === "No" ? "NO" : val === "Si" ? "SI" : "NOCONSTA";
+
+const AsumeNoIfUnknown = (val: string) => (val && val.length ? val : "No");
 
 function addDaysToMilisecondsAndGetDate(date, days) {
   var result = new Date(date);
