@@ -21,7 +21,7 @@ import xlsx from "xlsx";
 
 import path from "path";
 import { fileURLToPath } from "url";
-import { cancerTypeForTNM, formatDate } from "./temp";
+import { cancerTypeForTNM, computeStageFromTNM, formatDate } from "./temp";
 import {
   cTNMType,
   pTNMType,
@@ -528,12 +528,12 @@ export const HEADERS_LIVER_DDBB = {
 };
 
 (async () => {
-  const filteredData = await parseXlsx2(
+  const _filteredData = await parseXlsx2(
     "assets/esophagus/eurecca-2022",
     "Sheet1"
   );
 
-  // const filteredData = await JSON.parse(JSON.stringify(_filteredData));
+  const filteredData = await JSON.parse(JSON.stringify(_filteredData));
 
   // console.log(JSON.stringify(filteredData[3], null, 2));
 
@@ -599,18 +599,74 @@ export const HEADERS_LIVER_DDBB = {
     const pN_ = currentObservation["Estadio patológico pN_1"]; // two equal columns
     const pM = currentObservation["Estadio patológico M"];
     const gradoDiferenciación = currentObservation["Grado de diferenciación"]; // Pregunta: se puede asumir algo cuando celda vacia??
-    if (!cT || !cN || !pT || (!pN && !pN_) || !pM) {
-      // console.error("Missing TNM inputs for ID:  ", pacientCode);
-      continue;
+
+    if (cT && cN) {
+      let cStage = computeStageFromTNM({
+        isPathologic: false,
+        cancerType: tipoHistologico,
+        isTreatedBefore: false,
+        T: cT.substring(1),
+        N: cN,
+      });
+
+      if (cStage === undefined) {
+        console.error(
+          `patient with num : ${pacientCode} has uncomputable cStage`
+        );
+      } else {
+        // correctly computed, TODO: save it
+        Object.assign(currentObservation, { ClinicalStage: cStage });
+        console.log(`cTNM: ${cT}${cN}, stage is: STAGE ${cStage}`);
+      }
     }
 
-    console.log(`cTNM: ${cT}${cN}`);
-    console.log(`pTNM: ${pT}${pN || pN_}${pM}`);
+    if (pT && (pN || pN_)) {
+      const _hadNeoadjuvantTreatment =
+        currentObservation["Tratamiento neodyuvante"];
 
-    const hadNeoadjuvantTreatment =
-      currentObservation["Tratamiento neodyuvante"] !== "NO";
+      const hadNeoadjuvantTreatment =
+        _hadNeoadjuvantTreatment === "NO"
+          ? undefined
+          : _hadNeoadjuvantTreatment === "Grado I: Bien diferenciado"
+          ? "G1"
+          : _hadNeoadjuvantTreatment === "Grado II: Moderadamente diferenciado"
+          ? "G2"
+          : _hadNeoadjuvantTreatment === "Grado III: Pobremente diferenciado"
+          ? "G3"
+          : undefined;
 
-    let pStage: pTNMType | ypTNMType;
-    let cStage: cTNMType;
+      const _T = pT.toString().substring(1);
+      const T = _T === "1" ? "1b" : _T;
+
+      const N = ((pN ? pN : pN_) || 0).toString();
+
+      let pStage = computeStageFromTNM({
+        isPathologic: true,
+        cancerType: tipoHistologico,
+        isTreatedBefore: hadNeoadjuvantTreatment !== undefined,
+        gradeOfDifferentiation: hadNeoadjuvantTreatment,
+        T,
+        N,
+        M: pM.toString() || "0",
+      });
+
+      if (pStage === undefined) {
+        console.error(
+          `patient with num : ${pacientCode} has uncomputable pStage`
+        );
+      } else {
+        // correctly computed, TODO: save it
+        if (hadNeoadjuvantTreatment) {
+          Object.assign(currentObservation, { yPatologicalStage: pStage });
+          console.log(`ypT${T}N${N}M${pM || 0}: , stage is: STAGE ${pStage}`);
+        } else {
+          Object.assign(currentObservation, { patologicalStage: pStage });
+          console.log(`pT${T}N${N}M${pM || 0}:, stage is: STAGE ${pStage}`);
+        }
+      }
+    }
+
+    // preguntar: cuando no hay valores TNM se supone a 0?
   }
+  buildXlsxFile2("COMPUTEDSTAGE", filteredData, "output");
 })();

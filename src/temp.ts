@@ -18,10 +18,12 @@ import {
   cNtype,
   cTNMRelationsAdenocarcinoma,
   cTNMRelationsSquamousCarcinoma,
+  cTNMType,
   cTtype,
   pDifferentiationGradeType,
   pNtype,
   pTNMRelationsAdenocarcinoma,
+  pTNMType,
   pTtype,
   ypNtype,
   ypTNMRelations,
@@ -1423,24 +1425,24 @@ export const computeStageFromTNM = ({
   T,
   N,
   M,
-}: TNMType) => {
+}: TNMType | undefined) => {
+  // TODO: make return types with generics
   if (!isPathologic) {
     // is clinical evaluation
     if (N === "1") N = "+";
     if (N === "0") N = "-";
     if (cancerType === "adenocarcinoma") {
       return (
-        "STAGE " +
-        cTNMRelationsAdenocarcinoma.find((item) => item.N === N && item.T === T)
-          .result
+        (cTNMRelationsAdenocarcinoma.find(
+          (item) => item.N === N && item.T === T
+        )?.result as cTNMType) || undefined
       );
     }
     if (cancerType === "squamousCarcinoma") {
       return (
-        "STAGE " +
-        cTNMRelationsSquamousCarcinoma.find(
+        (cTNMRelationsSquamousCarcinoma.find(
           (item) => item.N === N && item.T === T
-        ).result
+        )?.result as cTNMType) || undefined
       );
     }
   } else {
@@ -1449,37 +1451,34 @@ export const computeStageFromTNM = ({
       // common for adenocarcinoma and squamousCarcinoma
 
       return (
-        "STAGE " +
-        ypTNMRelations.find(
+        (ypTNMRelations.find(
           (item) => (item.N ? item.N === N : item.M === M) && item.T === T
-        ).result
+        )?.result as ypTNMType) || undefined
       );
     }
 
     if (cancerType === "adenocarcinoma") {
       return (
-        "STAGE " +
-        pTNMRelationsAdenocarcinoma.find(
+        (pTNMRelationsAdenocarcinoma.find(
           (item) =>
             (item.N ? item.N === N : item.M === M) &&
             item.T === T &&
             (item.differentiationGrade
               ? item.differentiationGrade === gradeOfDifferentiation
               : true)
-        ).result
+        )?.result as pTNMType) || undefined
       );
     }
     if (cancerType === "squamousCarcinoma") {
       return (
-        "STAGE " +
-        pTNMRelationsAdenocarcinoma.find(
+        (pTNMRelationsAdenocarcinoma.find(
           (item) =>
             (item.N ? item.N === N : item.M === M) &&
             item.T === T &&
             (item.differentiationGrade
               ? item.differentiationGrade === gradeOfDifferentiation
               : true)
-        ).result
+        )?.result as pTNMType) || undefined
       );
     }
   }
