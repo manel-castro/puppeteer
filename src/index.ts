@@ -1202,7 +1202,7 @@ const getScrappingData = async () => {
   }
 };
 
-getScrappingData();
+// getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1333,7 +1333,7 @@ const computeClavienDindo = (
     0
   );
 
-  return Math.sqrt(weightedValueArrRes / 2);
+  return Math.sqrt(weightedValueArrRes) / 2;
 };
 
 const estimateCCIInBaseMaxClavienAndTargetCCI = (
@@ -1358,6 +1358,7 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
 
   console.log("ClavienGradesCount before correction: ", ClavienGradesCount);
   currentIterationValue = computeClavienDindo(ClavienGradesCount);
+  console.log("currentIterationValue: ", currentIterationValue);
 
   let isNextToTarget = false;
   const upperBoundary = targetCCI * (1 + errorMargin);
@@ -1410,6 +1411,8 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
     return;
   }
 };
+
+estimateCCIInBaseMaxClavienAndTargetCCI("gradeIVa", 62.15);
 
 type TNMTypes = "cTNM" | "pTNM" | "ypTNM";
 
