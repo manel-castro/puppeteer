@@ -496,8 +496,8 @@ const getScrappingData = async () => {
     const ValueCMDAbansData = ValueCMDAbans
       ? formatDate(
           addDaysToMilisecondsAndGetDate(
-            ValueDataIngres,
-            -(Math.random() * (60 - 50) + 50)
+            ValueDataDiagnostic,
+            +(Math.random() * (14 - 5) + 14)
           )
         )
       : ""; // !!  2 months before aprox
@@ -995,8 +995,8 @@ const getScrappingData = async () => {
             clavienGrau === "V"); // nomes hi ha un // PK: !! Causa REIQ??? || Grau Clavien Dindo  >= 4
         const valueTempsUCIREA = "0"; // PK: induir:  Temps normal d'estada + alta ????
         const valueREIQ = currentObservation[HEADERS_LIVER_DDBB.REIQ];
-        const valueDataREIQ = "00/00/2000"; // nomes hi ha un
-        const valueMotiuREIQ = "PER_COMPLICACIO"; //! PK: Sempre será per Altres Complicacions postOp = Resposta -> SI ???
+        const valueDataREIQ = "00/00/2000"; // nomes hi ha un // HO MIREM MANUAL SEPARAR-HO
+        const valueMotiuREIQ = "PER_COMPLICACIO"; //! PK: Sempre será per Altres Complicacions postOp = Resposta -> SI
 
         const valueMorbilitat = "SI";
 
