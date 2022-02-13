@@ -49,6 +49,16 @@ const {
 const { BUTTON_BACK_LIST, LINK_LIST_ITEM } = INTERFACE_IDS.LIST_PAGE;
 const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
 
+const PuppeteerDeleteAndType = async (
+  frame: puppeteer.Frame,
+  element: string,
+  value: string
+) => {
+  await frame.$eval(element, (el: any, value) => (el.value = value), "");
+
+  await frame.type(element, value);
+};
+
 type InterfacePuppeteerSetupRes = {
   browser: puppeteer.Browser;
   pages: puppeteer.Page[];
@@ -56,7 +66,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/30664d62-85ea-468d-a965-41cfdc398708",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/91202e3a-82f4-416f-acac-fc58237cfce4",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -183,9 +193,12 @@ const goBackFromList = async (frame: puppeteer.Frame) => {
 };
 const saveForm = async (frame: puppeteer.Frame) => {
   const saveButtID = INTERFACE_IDS.FORM_PAGE.BUTTON_SAVE_FORM;
+  const saveEl = await frame.$(saveButtID);
+  await frame.waitForTimeout(2000);
+
   await Promise.all([
     frame.waitForSelector(saveButtID),
-    frame.$eval(saveButtID, (el: any) => el.click()),
+    saveEl.click(),
     frame.waitForNavigation({ waitUntil: "networkidle2" }),
   ]);
 };
@@ -236,7 +249,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 46; i < 48; i++) {
+  for (let i = 47; i < 49; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -375,7 +388,7 @@ const getScrappingData = async () => {
       await frame.$eval(
         IsFormClosed_ID,
         (el: any, value) => {
-          if (!value) {
+          if (value) {
             el.click();
           }
         },
@@ -430,32 +443,37 @@ const getScrappingData = async () => {
     try {
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           DATA_INGRES,
-          (el: any, value) => (el.value = value),
+
           DataIngresInOddFormat
         ),
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           DATA_ALTA,
-          (el: any, value) => (el.value = value),
+
           DataAltaInOddFormat
         ),
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           DATA_DIAGNOSTIC,
-          (el: any, value) => (el.value = value),
+
           DataDiagnosticInOddFormat
         ),
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           DATA_IQ,
-          (el: any, value) => (el.value = value),
+
           DataIQInOddFormat
         ),
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           EDAT_IQ,
-          (el: any, value) => (el.value = value),
+
           ValueEdatIQ
         ),
-        frame.$eval(PES_KG, (el: any, value) => (el.value = value), ValuePes),
+        await PuppeteerDeleteAndType(frame, PES_KG, ValuePes),
         frame.$eval(
           TALLA_CM,
           (el: any, value) => (el.value = value),
@@ -876,8 +894,8 @@ const getScrappingData = async () => {
     // Compl PostIQ
     // ************
 
-    const valueComplPostIQ =
-      parseInt(currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN]) !== 0;
+    const _grauClavien = currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN];
+    const valueComplPostIQ = _grauClavien && parseInt(_grauClavien) !== 0;
 
     try {
       await Promise.all([
@@ -897,29 +915,38 @@ const getScrappingData = async () => {
       if (valueComplPostIQ) {
         // *****************
         // Compl PostIQ
+        // ---- Clavien-Dindo
+        // *****************
+
+        const clavienGrau = currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN];
+        const clavienDindoCCI = currentObservation[HEADERS_LIVER_DDBB.CCIndex];
+
+        console.log("clavienGrau: ", clavienGrau);
+
+        const clavienDindoEstimations =
+          await estimateCCIInBaseMaxClavienAndTargetCCI(
+            clavienGrau,
+            clavienDindoCCI
+          );
+        console.log("clavienDindoEstimations: ", clavienDindoEstimations);
+
+        // *****************
+        // Compl PostIQ
         // ---- Especifiques
         // *****************
         const valueInsufHepatica =
           currentObservation[HEADERS_LIVER_DDBB.INSUFHEPisgls];
 
-        console.log("valueInsufHepatica: ", valueInsufHepatica);
-
         const valueInsufHepaticaGrau =
           currentObservation[HEADERS_LIVER_DDBB.GrauIH];
-        console.log("valueInsufHepaticaGrau: ", valueInsufHepaticaGrau);
         const valueFistulaBil = currentObservation[HEADERS_LIVER_DDBB.FISTBILI];
-        console.log("valueFistulaBil: ", valueFistulaBil);
         const valueFistulaBilGrau =
           currentObservation[HEADERS_LIVER_DDBB.GRAUFB];
-        console.log("valueFistulaBilGrau: ", valueFistulaBilGrau);
         const valueFistulaBilDebitDiari = "0";
         const valueCalDrenatge =
           currentObservation[HEADERS_LIVER_DDBB.INFESPAI];
-        console.log("valueCalDrenatge: ", valueCalDrenatge);
         const valueHemoper = currentObservation[HEADERS_LIVER_DDBB.HEMOPER];
-        console.log("valueHemoper: ", valueHemoper);
         const valueAscitis = currentObservation[HEADERS_LIVER_DDBB.ASCITIS];
-        console.log("valueAscitis: ", valueAscitis);
 
         await frame.select(
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.ID),
@@ -986,7 +1013,6 @@ const getScrappingData = async () => {
         // ---- UCI
         // *****************
 
-        const clavienGrau = currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN];
         const valueEstadaUCIREA =
           clavienGrau &&
           (clavienGrau === "IIIb" ||
@@ -1095,9 +1121,10 @@ const getScrappingData = async () => {
         (el: any, value) => (el.value = value),
         valueNumMetAP
       );
-      await frame.$eval(
+
+      await PuppeteerDeleteAndType(
+        frame,
         basicParseID(HTML_IDS_LIVER.AP.MAJOR_MH),
-        (el: any, value) => (el.value = value),
         valueMidaMaxMetAP
       );
     } catch (e) {
@@ -1186,9 +1213,9 @@ const getScrappingData = async () => {
     console.log(currentNHC, " added to completed register");
     console.log("SAVING AND GOING TO SEARCH FORM");
 
-    frame.waitForNavigation();
-    break;
+    frame.waitForNavigation({ waitUntil: "networkidle2" });
     await saveForm(frame);
+    break;
     await goBackFromList(frame);
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
@@ -1202,7 +1229,7 @@ const getScrappingData = async () => {
   }
 };
 
-// getScrappingData();
+getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1297,13 +1324,7 @@ type ClavienDindoCountType = {
   gradeIVa: number;
   gradeIVb: number;
 };
-type ClavienDindoGrades =
-  | "gradeI"
-  | "gradeII"
-  | "gradeIIIa"
-  | "gradeIIIb"
-  | "gradeIVa"
-  | "gradeIVb";
+type ClavienDindoGrades = "I" | "II" | "IIIa" | "IIIb" | "IVa" | "IVb";
 
 type ClavienDindoCountArrType = {
   name: ClavienDindoGrades;
@@ -1340,23 +1361,21 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
   maxClavien: ClavienDindoGrades,
   targetCCI: number
 ): Promise<ClavienDindoCountArrType> => {
-  // returns: clavien dindo combinations!
-  const errorMargin = 0.05;
+  // COULD BE OPTIMIZED USING MONTECARLO.
+  // Integrate existing Python library: https://github.com/cdslaborg/paramonte
+  // with BOA: https://medium.com/imgcook/boa-use-python-functions-in-node-js-8946d413fbe3
 
-  const currentClavien = maxClavien;
+  const errorMargin = 0.05;
 
   let ClavienGradesCount: ClavienDindoCountArrType = [
     // will be only one
-    { name: "gradeI", index: 1, count: maxClavien === "gradeI" ? 1 : 0 },
-    { name: "gradeII", index: 2, count: maxClavien === "gradeII" ? 1 : 0 },
-    { name: "gradeIIIa", index: 3, count: maxClavien === "gradeIIIa" ? 1 : 0 },
-    { name: "gradeIIIb", index: 4, count: maxClavien === "gradeIIIb" ? 1 : 0 },
-    { name: "gradeIVa", index: 5, count: maxClavien === "gradeIVa" ? 1 : 0 },
-    { name: "gradeIVb", index: 6, count: maxClavien === "gradeIVb" ? 1 : 0 },
+    { name: "I", index: 1, count: maxClavien === "I" ? 1 : 0 },
+    { name: "II", index: 2, count: maxClavien === "II" ? 1 : 0 },
+    { name: "IIIa", index: 3, count: maxClavien === "IIIa" ? 1 : 0 },
+    { name: "IIIb", index: 4, count: maxClavien === "IIIb" ? 1 : 0 },
+    { name: "IVa", index: 5, count: maxClavien === "IVa" ? 1 : 0 },
+    { name: "IVb", index: 6, count: maxClavien === "IVb" ? 1 : 0 },
   ];
-
-  console.log("ClavienGradesCount before correction: ", ClavienGradesCount);
-  const initialCCI = computeClavienDindo(ClavienGradesCount);
 
   // save last value that doesn't fit (Start by the one which is maximum)
   let lastGrade = maxClavien;
@@ -1375,26 +1394,13 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
 
     const currentIterationValue = computeClavienDindo(ClavienGradesCount);
 
-    const isIntoLower = isIntoLowerBoundary(currentIterationValue);
-    const isIntoUpper = isIntoUpperBoundary(currentIterationValue);
-    console.log("lowerBoundary: ", lowerBoundary);
-    console.log("upperBoundary: ", upperBoundary);
-
-    console.log("isIntoLower: ", isIntoLower);
-    console.log("isIntoUpper: ", isIntoUpper);
-    console.log("targetCCI: ", targetCCI);
-    console.log("currentIterationValue: ", currentIterationValue);
-
     isNextToTarget =
       currentIterationValue === targetCCI ||
       (isIntoLowerBoundary(currentIterationValue) &&
         isIntoUpperBoundary(currentIterationValue));
 
     if (isNextToTarget) {
-      console.log("Result is: ", ClavienGradesCount);
-
       return ClavienGradesCount;
-      break;
     }
 
     // Compute corrections
@@ -1405,12 +1411,6 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
     ++_testValue.count;
 
     const testValue = computeClavienDindo(_testMatrix);
-
-    console.log("testValue: ", testValue);
-    console.log(
-      "isIntoLowerBoundary(testValue): ",
-      isIntoLowerBoundary(testValue)
-    );
 
     const foundValue = ClavienGradesCount.find(
       (item) => item.name === lastGrade
@@ -1423,37 +1423,20 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
     } else {
       //doesn't add value and decrease lastGrade
       // will check if already is in target area
-      console.log("IS NOT INTO LOWERBOUNDARY");
-      console.log("foundValue: ", foundValue);
 
       const nextIndex = foundValue.index - 1;
-      console.log("nextIndex: ", nextIndex);
-      console.log("foundValue.index: ", foundValue.index);
 
       if (nextIndex === 0) {
       } else {
         lastGrade = ClavienGradesCount.find(
           (item) => item.index === nextIndex
         ).name;
-
-        console.log("ChangedLastGrade: ", lastGrade);
       }
     }
-
-    console.log("testValue: ", testValue);
-    // console.log("_testMatrix: ", JSON.stringify(_testMatrix, null, 2));
-    // console.log(
-    //   "ClavienGradesCount: ",
-    //   JSON.stringify(ClavienGradesCount, null, 2)
-    // );
-
-    // return matrix
-
-    console.log("ClavienGradesCount after correction: ", ClavienGradesCount);
   }
 };
 
-estimateCCIInBaseMaxClavienAndTargetCCI("gradeIVb", 61.14);
+// estimateCCIInBaseMaxClavienAndTargetCCI("gradeIVb", 61.14);
 
 type TNMTypes = "cTNM" | "pTNM" | "ypTNM";
 
