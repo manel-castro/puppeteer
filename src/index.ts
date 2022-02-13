@@ -301,13 +301,13 @@ const getScrappingData = async () => {
     // !! estada not always defined
 
     const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
-    const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES]; //??
-    const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla]; //??
+    const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES].toString(); //??
+    const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla].toString(); //??
     const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
     const ValueEcog = "NO-VALORAT"; //??
     const ValueEras = "NO"; //??
 
-    if (!ValueEdatIQ || !ValuePes || !ValueTalla || !ValueASA) {
+    if (!ValuePes || !ValueTalla || !ValueASA) {
       const errorMessage = "Falta alguna variable, revisar";
       console.error("errorMessage: ", errorMessage);
 
@@ -442,43 +442,42 @@ const getScrappingData = async () => {
     // if (false)
 
     try {
-      await Promise.all([
-        // CHECK VALUES OF ASA WITH EXISTING FORM
-        await PuppeteerDeleteAndType(
-          frame,
-          DATA_INGRES,
+      // CHECK VALUES OF ASA WITH EXISTING FORM
+      await PuppeteerDeleteAndType(
+        frame,
+        DATA_INGRES,
 
-          DataIngresInOddFormat
-        ),
-        await PuppeteerDeleteAndType(
-          frame,
-          DATA_ALTA,
+        DataIngresInOddFormat
+      );
+      await PuppeteerDeleteAndType(
+        frame,
+        DATA_ALTA,
 
-          DataAltaInOddFormat
-        ),
-        await PuppeteerDeleteAndType(
-          frame,
-          DATA_DIAGNOSTIC,
+        DataAltaInOddFormat
+      );
+      await PuppeteerDeleteAndType(
+        frame,
+        DATA_DIAGNOSTIC,
 
-          DataDiagnosticInOddFormat
-        ),
-        await PuppeteerDeleteAndType(
-          frame,
-          DATA_IQ,
+        DataDiagnosticInOddFormat
+      );
+      await PuppeteerDeleteAndType(
+        frame,
+        DATA_IQ,
 
-          DataIQInOddFormat
-        ),
-        await PuppeteerDeleteAndType(
-          frame,
-          EDAT_IQ,
+        DataIQInOddFormat
+      );
+      // AGE CALCULATED AUTOMATICALLY
+      // await PuppeteerDeleteAndType(
+      //   frame,
+      //   EDAT_IQ,
 
-          ValueEdatIQ
-        ),
-        await PuppeteerDeleteAndType(frame, PES_KG, ValuePes),
-        await PuppeteerDeleteAndType(frame, TALLA_CM, ValueTalla),
+      //   ValueEdatIQ
+      // );
+      await PuppeteerDeleteAndType(frame, PES_KG, ValuePes);
+      await PuppeteerDeleteAndType(frame, TALLA_CM, ValueTalla);
 
-        // frame.waitForNavigation({ waitUntil: "networkidle2" }),
-      ]);
+      // frame.waitForNavigation({ waitUntil: "networkidle2" }),
     } catch (e) {
       console.error(
         "unable to complete promise all for general input data, error message: "
@@ -565,18 +564,17 @@ const getScrappingData = async () => {
           (el: any, value) => (el.value = value),
           numMH
         */
-        await Promise.all([
-          await PuppeteerDeleteAndType(
-            frame,
-            HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
 
-            ValueCMDAbansData
-          ),
-          frame.select(
-            HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
-            HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
-          ),
-        ]);
+        await PuppeteerDeleteAndType(
+          frame,
+          HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
+
+          ValueCMDAbansData
+        );
+        await frame.select(
+          HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
+          HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
+        );
       } catch (e) {
         const errorMessage =
           "unable to complete promise all for CMD data after condition CMD = true, error message: ";
@@ -752,30 +750,28 @@ const getScrappingData = async () => {
       console.error(e);
     }
 
-    const numMH = currentObservation[HEADERS_LIVER_DDBB.NMETIMAGpre];
+    const numMH = currentObservation[HEADERS_LIVER_DDBB.NMETIMAGpre].toString();
     const MHMajorDiam = Math.round(
       parseFloat(currentObservation[HEADERS_LIVER_DDBB.MIDAMHIMATGE]) * 10
     ).toString();
 
     try {
-      await Promise.all([
-        frame.select(
-          HTML_IDS_LIVER.TUMOR_ORIGEN_MH.ID,
-          HTML_IDS_LIVER.TUMOR_ORIGEN_MH.VALUES["CCR"]
-        ),
-        await PuppeteerDeleteAndType(
-          frame,
-          HTML_IDS_LIVER.NUM_MH_DIAG,
+      await frame.select(
+        HTML_IDS_LIVER.TUMOR_ORIGEN_MH.ID,
+        HTML_IDS_LIVER.TUMOR_ORIGEN_MH.VALUES["CCR"]
+      );
+      await PuppeteerDeleteAndType(
+        frame,
+        HTML_IDS_LIVER.NUM_MH_DIAG,
 
-          numMH
-        ),
-        await PuppeteerDeleteAndType(
-          frame,
-          HTML_IDS_LIVER.DIAMETRE_MAJOR_MH,
+        numMH
+      );
+      await PuppeteerDeleteAndType(
+        frame,
+        HTML_IDS_LIVER.DIAMETRE_MAJOR_MH,
 
-          MHMajorDiam
-        ),
-      ]);
+        MHMajorDiam
+      );
     } catch (e) {
       console.error("!!!!!!", e);
     }
@@ -785,23 +781,23 @@ const getScrappingData = async () => {
       : currentObservation[HEADERS_LIVER_DDBB.RES2]
       ? "1"
       : "0";
+
+    console.log("numReseccPrev: ", numReseccPrev);
+
     const affBilob = currentObservation[HEADERS_LIVER_DDBB.BILOBUL];
 
+    await PuppeteerDeleteAndType(
+      frame,
+      HTML_IDS_LIVER.NUM_RESECCIONS_H_PREV,
+      "0" + numReseccPrev
+    );
     try {
-      await Promise.all([
-        await PuppeteerDeleteAndType(
-          frame,
-          HTML_IDS_LIVER.NUM_RESECCIONS_H_PREV,
-
-          numReseccPrev
-        ),
-        frame.select(
-          HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
-          HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
-            affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
-          ]
-        ),
-      ]);
+      await frame.select(
+        HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
+        HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
+          affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
+        ]
+      );
     } catch (e) {
       console.error("!!!!!!", e);
     }
@@ -1053,25 +1049,24 @@ const getScrappingData = async () => {
             NoSiParse(valueREIQ)
           ]
         );
-        if (valueREIQ === "Si")
-          await Promise.all([
-            await PuppeteerDeleteAndType(
-              frame,
-              basicParseID(
-                HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.DATA_REINT_90_DIES
-              ),
+        if (valueREIQ === "Si") {
+          await PuppeteerDeleteAndType(
+            frame,
+            basicParseID(
+              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.DATA_REINT_90_DIES
+            ),
 
-              valueDataREIQ
+            valueDataREIQ
+          );
+          await frame.select(
+            basicParseID(
+              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.ID
             ),
-            frame.select(
-              basicParseID(
-                HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.ID
-              ),
-              HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.VALUES[
-                valueMotiuREIQ
-              ]
-            ),
-          ]);
+            HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.VALUES[
+              valueMotiuREIQ
+            ]
+          );
+        }
 
         await frame.select(
           basicParseID(HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.ID),
@@ -1094,6 +1089,8 @@ const getScrappingData = async () => {
           parseFloat(currentObservation[HEADERS_LIVER_DDBB.MARGEN])
         ).toString() || "0";
       const valueNumMetAP = currentObservation[HEADERS_LIVER_DDBB.NMETAP] || 0;
+
+      console.log("valueNumMetAP: ", valueNumMetAP);
 
       const midaApStr = currentObservation[HEADERS_LIVER_DDBB.MIDAAP];
       console.log("midaApStr: ", midaApStr);
@@ -1121,11 +1118,11 @@ const getScrappingData = async () => {
 
           valueDistMargeResAP
         );
+
       await PuppeteerDeleteAndType(
         frame,
         basicParseID(HTML_IDS_LIVER.AP.NUMERO_MH),
-
-        valueNumMetAP
+        valueNumMetAP.toString()
       );
 
       await PuppeteerDeleteAndType(
@@ -1222,8 +1219,8 @@ const getScrappingData = async () => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
-    await saveForm(frame);
     break;
+    await saveForm(frame);
     await goBackFromList(frame);
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
