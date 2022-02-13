@@ -1336,13 +1336,12 @@ const computeClavienDindo = (
   return Math.sqrt(weightedValueArrRes) / 2;
 };
 
-const estimateCCIInBaseMaxClavienAndTargetCCI = (
+const estimateCCIInBaseMaxClavienAndTargetCCI = async (
   maxClavien: ClavienDindoGrades,
-  targetCCI: number,
-  currentIterationValue = 0
-): ClavienDindoCountArrType => {
+  targetCCI: number
+): Promise<ClavienDindoCountArrType> => {
   // returns: clavien dindo combinations!
-  const errorMargin = 0.1;
+  const errorMargin = 0.05;
 
   const currentClavien = maxClavien;
 
@@ -1357,62 +1356,104 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = (
   ];
 
   console.log("ClavienGradesCount before correction: ", ClavienGradesCount);
-  currentIterationValue = computeClavienDindo(ClavienGradesCount);
-  console.log("currentIterationValue: ", currentIterationValue);
+  const initialCCI = computeClavienDindo(ClavienGradesCount);
 
-  let isNextToTarget = false;
+  // save last value that doesn't fit (Start by the one which is maximum)
+  let lastGrade = maxClavien;
+  let isTargetAreaReached = false;
+
   const upperBoundary = targetCCI * (1 + errorMargin);
   const lowerBoundary = targetCCI / (1 + errorMargin);
 
-  const isIntoUpperBoundary = currentIterationValue < upperBoundary;
-  const isIntoLowerBoundary = currentIterationValue > lowerBoundary;
+  const isIntoLowerBoundary = (value: number) => value > lowerBoundary;
+  const isIntoUpperBoundary = (value: number) => value < upperBoundary;
 
-  isNextToTarget =
-    currentIterationValue === targetCCI ||
-    (isIntoLowerBoundary && isIntoUpperBoundary);
+  // this will be a while
+  while (true) {
+    // check if match, and return value.
+    let isNextToTarget = false;
 
-  if (isNextToTarget) return ClavienGradesCount;
+    const currentIterationValue = computeClavienDindo(ClavienGradesCount);
 
-  let newValue = currentIterationValue;
+    const isIntoLower = isIntoLowerBoundary(currentIterationValue);
+    const isIntoUpper = isIntoUpperBoundary(currentIterationValue);
+    console.log("lowerBoundary: ", lowerBoundary);
+    console.log("upperBoundary: ", upperBoundary);
 
-  if (targetCCI > currentIterationValue) {
-    const reversedGrades = ClavienGradesCount.slice().reverse();
+    console.log("isIntoLower: ", isIntoLower);
+    console.log("isIntoUpper: ", isIntoUpper);
+    console.log("targetCCI: ", targetCCI);
+    console.log("currentIterationValue: ", currentIterationValue);
 
-    for (let jx = 0; jx < reversedGrades.length; jx++) {
-      const currentGrade = reversedGrades[jx];
-      if (currentGrade.count === 0) {
+    isNextToTarget =
+      currentIterationValue === targetCCI ||
+      (isIntoLowerBoundary(currentIterationValue) &&
+        isIntoUpperBoundary(currentIterationValue));
+
+    if (isNextToTarget) {
+      console.log("Result is: ", ClavienGradesCount);
+
+      return ClavienGradesCount;
+      break;
+    }
+
+    // Compute corrections
+
+    console.log(computeClavienDindo(ClavienGradesCount));
+    const _testMatrix = await JSON.parse(JSON.stringify(ClavienGradesCount));
+    const _testValue = _testMatrix.find((item) => item.name === lastGrade);
+    ++_testValue.count;
+
+    const testValue = computeClavienDindo(_testMatrix);
+
+    console.log("testValue: ", testValue);
+    console.log(
+      "isIntoLowerBoundary(testValue): ",
+      isIntoLowerBoundary(testValue)
+    );
+
+    const foundValue = ClavienGradesCount.find(
+      (item) => item.name === lastGrade
+    );
+
+    if (testValue < targetCCI) {
+      // add value and keep lastGrade
+
+      ++foundValue.count;
+    } else {
+      //doesn't add value and decrease lastGrade
+      // will check if already is in target area
+      console.log("IS NOT INTO LOWERBOUNDARY");
+      console.log("foundValue: ", foundValue);
+
+      const nextIndex = foundValue.index - 1;
+      console.log("nextIndex: ", nextIndex);
+      console.log("foundValue.index: ", foundValue.index);
+
+      if (nextIndex === 0) {
       } else {
-        const foundValue = ClavienGradesCount.find(
-          (item) => item.name === currentGrade.name
-        );
-        ++foundValue.count;
+        lastGrade = ClavienGradesCount.find(
+          (item) => item.index === nextIndex
+        ).name;
+
+        console.log("ChangedLastGrade: ", lastGrade);
       }
     }
 
+    console.log("testValue: ", testValue);
+    // console.log("_testMatrix: ", JSON.stringify(_testMatrix, null, 2));
+    // console.log(
+    //   "ClavienGradesCount: ",
+    //   JSON.stringify(ClavienGradesCount, null, 2)
+    // );
+
+    // return matrix
+
     console.log("ClavienGradesCount after correction: ", ClavienGradesCount);
-  }
-
-  if (targetCCI < currentIterationValue) {
-    const stepSize = (targetCCI - currentIterationValue) / (1 + errorMargin);
-    newValue -= stepSize;
-  }
-
-  const isNewValueIntoUpperBoundary = newValue < upperBoundary;
-  const isNewValueIntoLowerBoundary = newValue > lowerBoundary;
-
-  const isNewValueNextToTarget =
-    newValue === targetCCI ||
-    (isNewValueIntoUpperBoundary && isNewValueIntoLowerBoundary);
-
-  if (!isNewValueNextToTarget) {
-    return;
-    estimateCCIInBaseMaxClavienAndTargetCCI(maxClavien, targetCCI, newValue);
-  } else {
-    return;
   }
 };
 
-estimateCCIInBaseMaxClavienAndTargetCCI("gradeIVa", 62.15);
+estimateCCIInBaseMaxClavienAndTargetCCI("gradeIVb", 61.14);
 
 type TNMTypes = "cTNM" | "pTNM" | "ypTNM";
 
