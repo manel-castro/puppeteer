@@ -54,6 +54,7 @@ const PuppeteerDeleteAndType = async (
   element: string,
   value: string
 ) => {
+  // done since This shitty form has some way to control when Typed / scrolled / clciked
   await frame.$eval(element, (el: any, value) => (el.value = value), "");
 
   await frame.type(element, value);
@@ -474,11 +475,7 @@ const getScrappingData = async () => {
           ValueEdatIQ
         ),
         await PuppeteerDeleteAndType(frame, PES_KG, ValuePes),
-        frame.$eval(
-          TALLA_CM,
-          (el: any, value) => (el.value = value),
-          ValueTalla
-        ),
+        await PuppeteerDeleteAndType(frame, TALLA_CM, ValueTalla),
 
         // frame.waitForNavigation({ waitUntil: "networkidle2" }),
       ]);
@@ -569,9 +566,10 @@ const getScrappingData = async () => {
           numMH
         */
         await Promise.all([
-          frame.$eval(
+          await PuppeteerDeleteAndType(
+            frame,
             HTML_IDS_LIVER.TEXT_DATA_CMD_ABANS,
-            (el: any, value) => (el.value = value),
+
             ValueCMDAbansData
           ),
           frame.select(
@@ -765,14 +763,16 @@ const getScrappingData = async () => {
           HTML_IDS_LIVER.TUMOR_ORIGEN_MH.ID,
           HTML_IDS_LIVER.TUMOR_ORIGEN_MH.VALUES["CCR"]
         ),
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           HTML_IDS_LIVER.NUM_MH_DIAG,
-          (el: any, value) => (el.value = value),
+
           numMH
         ),
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           HTML_IDS_LIVER.DIAMETRE_MAJOR_MH,
-          (el: any, value) => (el.value = value),
+
           MHMajorDiam
         ),
       ]);
@@ -789,9 +789,10 @@ const getScrappingData = async () => {
 
     try {
       await Promise.all([
-        frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           HTML_IDS_LIVER.NUM_RESECCIONS_H_PREV,
-          (el: any, value) => (el.value = value),
+
           numReseccPrev
         ),
         frame.select(
@@ -975,11 +976,12 @@ const getScrappingData = async () => {
               NoSiParse(valueFistulaBilGrau)
             ]
           );
-          await frame.$eval(
+          await PuppeteerDeleteAndType(
+            frame,
             basicParseID(
               HTML_IDS_LIVER.COMPL_ESPECIFIQUES.DEBIT_DIARI_MAX_FUGA_BIL
             ),
-            (el: any, FROM) => (el.value = FROM),
+
             valueFistulaBilDebitDiari
           );
         }
@@ -1036,11 +1038,12 @@ const getScrappingData = async () => {
         );
 
         if (valueEstadaUCIREA)
-          await frame.$eval(
+          await PuppeteerDeleteAndType(
+            frame,
             basicParseID(
               HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.TEMPS_UCI_REA_DIES
             ),
-            (el: any, value) => (el.value = value),
+
             valueTempsUCIREA
           );
 
@@ -1052,11 +1055,12 @@ const getScrappingData = async () => {
         );
         if (valueREIQ === "Si")
           await Promise.all([
-            frame.$eval(
+            await PuppeteerDeleteAndType(
+              frame,
               basicParseID(
                 HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.DATA_REINT_90_DIES
               ),
-              (el: any, FROM) => (el.value = FROM),
+
               valueDataREIQ
             ),
             frame.select(
@@ -1111,14 +1115,16 @@ const getScrappingData = async () => {
       );
 
       if (valueAffMargeResAP && valueDistMargeResAP)
-        await frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           basicParseID(HTML_IDS_LIVER.AP.DIST_MARGE_RESSECCIO),
-          (el: any, value) => (el.value = value),
+
           valueDistMargeResAP
         );
-      await frame.$eval(
+      await PuppeteerDeleteAndType(
+        frame,
         basicParseID(HTML_IDS_LIVER.AP.NUMERO_MH),
-        (el: any, value) => (el.value = value),
+
         valueNumMetAP
       );
 
@@ -1176,9 +1182,10 @@ const getScrappingData = async () => {
           ? "COMPL_POSTOP"
           : "ALTRES";
 
-      await frame.$eval(
+      await PuppeteerDeleteAndType(
+        frame,
         basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_ULT_CONTROL),
-        (el: any, value) => (el.value = value),
+
         valueDarrerControl
       );
 
@@ -1188,9 +1195,10 @@ const getScrappingData = async () => {
       );
 
       if (valueEstat === "EXITUS" && valueExitusData)
-        await frame.$eval(
+        await PuppeteerDeleteAndType(
+          frame,
           basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.DATA_EXITUS),
-          (el: any, value) => (el.value = value),
+
           valueExitusData
         );
 
