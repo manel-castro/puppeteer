@@ -250,7 +250,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 47; i < 49; i++) {
+  for (let i = 0; i < 2; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -1219,9 +1219,9 @@ const getScrappingData = async () => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
-    break;
     await saveForm(frame);
     await goBackFromList(frame);
+    // break;
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
 
