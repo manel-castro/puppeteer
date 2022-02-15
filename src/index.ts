@@ -1223,7 +1223,7 @@ const getScrappingData = async () => {
       const valueEstat: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.VALUES =
         _estatPacient === "Viu"
           ? "VIU"
-          : _estatPacient === "Mort (lliure malaltia)"
+          : _estatPacient.includes("Mort")
           ? "EXITUS"
           : _estatPacient === "Perdut"
           ? "PERDUA_SEGUIMENT"
@@ -1234,12 +1234,15 @@ const getScrappingData = async () => {
 
       // Causa exitus:
       const _perComplPostOP =
-        currentObservation[HEADERS_LIVER_DDBB.MORTALITAT] === "Si"; // nomes clavien V
-      const _perRecidiva =
-        currentObservation[HEADERS_LIVER_DDBB.RECHEP] === "Si"; //?? PK
-      const _recidibaPulmonar = currentObservation[HEADERS_LIVER_DDBB.RECPUL]; //?? PK
-      const _perProgressioTumoral =
-        _recidibaPulmonar && _recidibaPulmonar.includes("Progressió");
+        _grauClavien === "V"; // nomes clavien V
+      const _perRecidiva = _estatPacient === "Mort (amb recidiva)"
+
+        // currentObservation[HEADERS_LIVER_DDBB.RECHEP] === "Si"; //?? PK
+      // const _recidibaPulmonar = currentObservation[HEADERS_LIVER_DDBB.RECPUL]; //?? PK
+
+      const _perProgressioTumoral = // no n'hi ha a la BBDD
+        
+      // _recidibaPulmonar && _recidibaPulmonar.includes("Progressió");
 
       // mort amb recidiva / tumor : estat == Mort (amb recidiva)
       // dintre d'aquestos:
@@ -1247,10 +1250,7 @@ const getScrappingData = async () => {
       // recidiva == 1 = recidiva => per progessio recidiva
       // altres: altres
 
-      const valueCausaExitus: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES =
-        _perProgressioTumoral
-          ? "MALALT_TUMOR_PROGRESSIO"
-          : _perRecidiva
+      const valueCausaExitus: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES = _perRecidiva
           ? "MALALT_TUMOR_RECIDIVA"
           : _perComplPostOP
           ? "COMPL_POSTOP"
