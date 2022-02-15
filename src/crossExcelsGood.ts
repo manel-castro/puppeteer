@@ -1,4 +1,6 @@
 import xlsx from "xlsx";
+import fs from "fs";
+import { buildXlsxFile, parseXlsx } from "./excel-functions";
 
 /*
 +++ TODOS +++
@@ -21,14 +23,6 @@ import xlsx from "xlsx";
 
 import path from "path";
 import { fileURLToPath } from "url";
-import { cancerTypeForTNM, computeStageFromTNM, formatDate } from "./index";
-import {
-  cTNMType,
-  pTNMType,
-  ypTNMRelations,
-  ypTNMType,
-} from "./consts/TNMRelations";
-import moment from "moment";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,7 +127,8 @@ export const searchInDDBBforNHCandDate = (
 };
 
 (async () => {
-  return; // get all DDBB data
+  return;
+  // get all DDBB data
   const ddbbData = await parseXlsx2(
     "assets/dataPlaOnco2019-2020",
     "PlaOnco2019-2020"
@@ -230,91 +225,91 @@ export const searchInDDBBforNHCandDate = (
         const _tempOcurrenceFilteredSAPRow = _tempOcurrenceFilteredSAP[x];
 
         // CASUISTIC 1: IT IS DUPLICATED IN FILTERED DATA
-        const _tempOccFilteredComment = _tempOcurrenceFilteredSAPRow[
-          headerFilteredData.COMMENT
-        ] as string;
+        // const _tempOccFilteredComment = _tempOcurrenceFilteredSAPRow[
+        //   headerFilteredData.COMMENT
+        // ] as string;
 
         const regExp = new RegExp("[0-9]");
 
-        const matchIndex = _tempOccFilteredComment.match(regExp)?.index;
+        // const matchIndex = _tempOccFilteredComment.match(regExp)?.index;
 
         // data format on ddbb 03-Jul-20
 
-        if (!matchIndex) {
-          crossedArraySAP.push(ocurrencesRow);
+        // if (!matchIndex) {
+        //   crossedArraySAP.push(ocurrencesRow);
 
-          occurrencesSAP.splice(x, 1);
+        //   occurrencesSAP.splice(x, 1);
 
-          continue;
-        }
-        const data = _tempOccFilteredComment.slice(
-          matchIndex,
-          _tempOccFilteredComment.length
-        );
+        //   continue;
+        // }
+        // const data = _tempOccFilteredComment.slice(
+        //   matchIndex,
+        //   _tempOccFilteredComment.length
+        // );
         // console.log("data is: ", data);
 
         // checking malformatted data: works right
-        if (data.includes(" y ")) {
-          const [data1, data2] = data.split(" y ");
+        // if (data.includes(" y ")) {
+        //   const [data1, data2] = data.split(" y ");
 
-          const daysJSFormatDate1 = getJsFormatFromOddDate(data1);
-          const MultipleYVal1 = searchInDDBBforNHCandDate(
-            occurrencesSAP,
-            filteredNHC,
-            daysJSFormatDate1
-          );
-          const daysJSFormatDate2 = getJsFormatFromOddDate(data2);
-          const MultipleYVal2 = searchInDDBBforNHCandDate(
-            occurrencesSAP,
-            filteredNHC,
-            daysJSFormatDate2
-          );
+        //   const daysJSFormatDate1 = getJsFormatFromOddDate(data1);
+        //   const MultipleYVal1 = searchInDDBBforNHCandDate(
+        //     occurrencesSAP,
+        //     filteredNHC,
+        //     daysJSFormatDate1
+        //   );
+        //   const daysJSFormatDate2 = getJsFormatFromOddDate(data2);
+        //   const MultipleYVal2 = searchInDDBBforNHCandDate(
+        //     occurrencesSAP,
+        //     filteredNHC,
+        //     daysJSFormatDate2
+        //   );
 
-          if (MultipleYVal1) crossedArraySAP.push(MultipleYVal1);
-          if (MultipleYVal2) crossedArraySAP.push(MultipleYVal2);
+        //   if (MultipleYVal1) crossedArraySAP.push(MultipleYVal1);
+        //   if (MultipleYVal2) crossedArraySAP.push(MultipleYVal2);
 
-          // occurrencesSAP.slice(x, 1);
+        //   // occurrencesSAP.slice(x, 1);
 
-          x = occurrencesSAP.length;
-          occurrencesSAP = [];
-          continue;
+        //   x = occurrencesSAP.length;
+        //   occurrencesSAP = [];
+        //   continue;
 
-          // --- Check values are right
-          // console.log("date1", TransformJSToXlsxDateFormat(daysJSFormatDate1));
+        //   // --- Check values are right
+        //   // console.log("date1", TransformJSToXlsxDateFormat(daysJSFormatDate1));
 
-          // console.log("foundValue1", foundValue1);
-          // console.log("date2", TransformJSToXlsxDateFormat(daysJSFormatDate2));
-          // console.log("foundValue2", foundValue2);
-        }
+        //   // console.log("foundValue1", foundValue1);
+        //   // console.log("date2", TransformJSToXlsxDateFormat(daysJSFormatDate2));
+        //   // console.log("foundValue2", foundValue2);
+        // }
 
         // one specific observation is bad formatted and both dates are specified on other date
-        if (data.includes(")")) {
-          crossedArraySAP.push(ocurrencesRow);
-          occurrencesSAP.splice(x, 1);
-          continue;
-        }
+        // if (data.includes(")")) {
+        //   crossedArraySAP.push(ocurrencesRow);
+        //   occurrencesSAP.splice(x, 1);
+        //   continue;
+        // }
 
-        const JSData = getJsFormatFromOddDate(data);
+        // const JSData = getJsFormatFromOddDate(data);
         const dataDownwardsThereshold = new Date(2019, 0, 1);
         const dataUpwardsThereshold = new Date(2020, 11, 31);
 
         // filter out of year variables
-        if (
-          JSData.getTime() > dataDownwardsThereshold.getTime() ||
-          JSData.getTime() < dataUpwardsThereshold.getTime()
-        ) {
-          // console.log("happened out of range");
-          // console.log(
-          //   `occurrencesBefore on index ${x}: ${occurrencesSAP.length}`
-          // );
+        // if (
+        //   JSData.getTime() > dataDownwardsThereshold.getTime() ||
+        //   JSData.getTime() < dataUpwardsThereshold.getTime()
+        // ) {
+        //   // console.log("happened out of range");
+        //   // console.log(
+        //   //   `occurrencesBefore on index ${x}: ${occurrencesSAP.length}`
+        //   // );
 
-          occurrencesSAP.splice(x, 1); // check if it works
-          continue;
-          // console.log(
-          //   `occurrences after on index ${x}: ${occurrencesSAP.length}`
-          // );
-          // x = occurrencesSAP.length;
-        }
+        //   occurrencesSAP.splice(x, 1); // check if it works
+        //   continue;
+        //   // console.log(
+        //   //   `occurrences after on index ${x}: ${occurrencesSAP.length}`
+        //   // );
+        //   // x = occurrencesSAP.length;
+        // }
 
         // data (format dd/mm/yy) === DATAHEP (format days from 1/1/1900)
         // const dataHepFromFilteredComment =
@@ -338,17 +333,17 @@ export const searchInDDBBforNHCandDate = (
       }
     }
 
-    if (occurrencesSAP.length === 1) {
-      crossedArraySAP.push(occurrencesSAP[0]);
-    } else if (occurrencesSAP.length === 0) {
-    } else {
-      console.error(
-        "More than one occurrence left when pushing to crossed array"
-      );
-      throw new Error(
-        "More than one occurrence left when pushing to crossed array"
-      );
-    }
+    // if (occurrencesSAP.length === 1) {
+    crossedArraySAP.push(...occurrencesSAP);
+    // } else if (occurrencesSAP.length === 0) {
+    // } else {
+    //   console.error(
+    //     "More than one occurrence left when pushing to crossed array"
+    //   );
+    //   throw new Error(
+    //     "More than one occurrence left when pushing to crossed array"
+    //   );
+    // }
   }
 
   console.log(JSON.stringify(crossedArraySAP, null, 2));
@@ -361,7 +356,7 @@ export const searchInDDBBforNHCandDate = (
   // ];
 
   // crossedArraySAP.unshift(ddbbData[0]);
-  buildXlsxFile2("crossedData2", crossedArraySAP);
+  buildXlsxFile2("crossedData3", crossedArraySAP);
 
   // console.log(.length);
   // console.log(JSON.stringify(crossedArray, null, 2));
@@ -468,6 +463,10 @@ type CheckVarCondType = {
 // ];
 
 export const HEADERS_LIVER_DDBB = {
+  FECHA1RCMD: "Fecha 1r CMD",
+  FECHAULTCMD: "Fecha ult. CMD",
+  FECHATACRM: "Fecha TAC-RM",
+  LOCTUMOR: "Loc. Tumor",
   TECNICA: "TECNICA",
   NUM_RESEC: "NUM_RESEC",
   NUM_PAC: "NUM_PAC",
@@ -526,148 +525,3 @@ export const HEADERS_LIVER_DDBB = {
   RECPUL: "RECHEP",
   DataEXITUS: "Data EXITUS",
 };
-
-(async () => {
-  return;
-  const _filteredData = await parseXlsx2(
-    "assets/esophagus/eurecca-2022",
-    "Sheet1"
-  );
-
-  const filteredData = await JSON.parse(JSON.stringify(_filteredData));
-
-  // console.log(JSON.stringify(filteredData[3], null, 2));
-
-  for (let xj = 0; xj < filteredData.length; xj++) {
-    // continue;
-    const currentObservation = filteredData[xj];
-    // Object.assign(currentObservation, { something: "else" });
-
-    // console.log(
-    //   "Grado de diferenciación: ",
-    //   currentObservation["Grado de diferenciación"]
-    // );
-
-    const pacientCode = currentObservation["Código Paciente"];
-
-    // console.log(pacientCode);
-
-    // continue;
-    const QIData = currentObservation["Fecha cirugía"];
-    // getJsFormatFromOddDate(QIData);
-
-    if (!QIData) return;
-
-    const checkIfDateIsValid = (d: any) => {
-      return d instanceof Date;
-    };
-
-    const parsedDate = checkIfDateIsValid(QIData)
-      ? QIData
-      : getJsFormatFromOddDate(QIData.toString());
-
-    const upperDateLimit = new Date(2020, 11, 32);
-    const lowerDateLimit = new Date(2019, 0, 2);
-
-    if (parsedDate > upperDateLimit || parsedDate < lowerDateLimit) continue;
-
-    // check how many observations are left
-
-    const tipoHistologico: cancerTypeForTNM =
-      currentObservation["Tipo histológico"] === "Adenocarcinoma"
-        ? "adenocarcinoma"
-        : currentObservation["Tipo histológico"] ===
-          "Carcinoma de células escamosas"
-        ? "squamousCarcinoma"
-        : null;
-
-    if (!tipoHistologico) continue;
-
-    // "Estadio clínico cT": "T3",
-    // "Estadio clínico cN": "+",
-    // "Estadio clínico cM": "M0",
-
-    const cT = currentObservation["Estadio clínico cT"];
-    const cN = currentObservation["Estadio clínico cN"];
-    const cM = currentObservation["Estadio clínico cM"];
-
-    // "Estadio patológico pT": "T4a",
-    // "Estadio patológico pN": "3b",
-    // "Estadio patológico M": 1,
-
-    const pT = currentObservation["Estadio patológico pT"];
-    const pN = currentObservation["Estadio patológico pN"]; // two equal columns
-    const pN_ = currentObservation["Estadio patológico pN_1"]; // two equal columns
-    const pM = currentObservation["Estadio patológico M"];
-    const gradoDiferenciación = currentObservation["Grado de diferenciación"]; // Pregunta: se puede asumir algo cuando celda vacia??
-
-    if (cT && cN) {
-      let cStage = computeStageFromTNM({
-        isPathologic: false,
-        cancerType: tipoHistologico,
-        isTreatedBefore: false,
-        T: cT.substring(1),
-        N: cN,
-      });
-
-      if (cStage === undefined) {
-        console.error(
-          `patient with num : ${pacientCode} has uncomputable cStage`
-        );
-      } else {
-        // correctly computed, TODO: save it
-        Object.assign(currentObservation, { ClinicalStage: cStage });
-        console.log(`cTNM: ${cT}${cN}, stage is: STAGE ${cStage}`);
-      }
-    }
-
-    if (pT && (pN || pN_)) {
-      const _hadNeoadjuvantTreatment =
-        currentObservation["Tratamiento neodyuvante"];
-
-      const hadNeoadjuvantTreatment =
-        _hadNeoadjuvantTreatment === "NO"
-          ? undefined
-          : _hadNeoadjuvantTreatment === "Grado I: Bien diferenciado"
-          ? "G1"
-          : _hadNeoadjuvantTreatment === "Grado II: Moderadamente diferenciado"
-          ? "G2"
-          : _hadNeoadjuvantTreatment === "Grado III: Pobremente diferenciado"
-          ? "G3"
-          : undefined;
-
-      const _T = pT.toString().substring(1);
-      const T = _T === "1" ? "1b" : _T;
-
-      const N = ((pN ? pN : pN_) || 0).toString();
-
-      let pStage = computeStageFromTNM({
-        isPathologic: true,
-        cancerType: tipoHistologico,
-        isTreatedBefore: hadNeoadjuvantTreatment !== undefined,
-        gradeOfDifferentiation: hadNeoadjuvantTreatment,
-        T,
-        N,
-        M: pM.toString() || "0",
-      });
-
-      if (pStage === undefined) {
-        console.error(
-          `patient with num : ${pacientCode} has uncomputable pStage`
-        );
-      } else {
-        // correctly computed, TODO: save it
-        if (hadNeoadjuvantTreatment) {
-          Object.assign(currentObservation, { yPatologicalStage: pStage });
-          console.log(`ypT${T}N${N}M${pM || 0}: , stage is: STAGE ${pStage}`);
-        } else {
-          Object.assign(currentObservation, { patologicalStage: pStage });
-          console.log(`pT${T}N${N}M${pM || 0}:, stage is: STAGE ${pStage}`);
-        }
-      }
-    }
-
-    // preguntar: cuando no hay valores TNM se supone a 0?
-  }
-  buildXlsxFile2("COMPUTEDSTAGE", filteredData, "output");
-})();
