@@ -21,7 +21,7 @@ import xlsx from "xlsx";
 
 import path from "path";
 import { fileURLToPath } from "url";
-import { cancerTypeForTNM, computeStageFromTNM, formatDate } from "./index";
+import { cancerTypeForTNM, computeStageFromTNM, formatDate } from "./sindex";
 import {
   cTNMType,
   pTNMType,
