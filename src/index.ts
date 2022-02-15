@@ -820,6 +820,72 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
+    // need to parse text
+    const _valuesLOC =
+      currentObservation[HEADERS_LIVER_DDBB.LOCTUMOR]?.split(",") || [];
+
+    const valLocI = _valuesLOC.find((item) => item === "I")?.length
+      ? "SI"
+      : "NO";
+    const valLocII = _valuesLOC.find((item) => item === "II")?.length
+      ? "SI"
+      : "NO";
+    const valLocIII = _valuesLOC.find((item) => item === "III")?.length
+      ? "SI"
+      : "NO";
+    const valLocIV = _valuesLOC.find((item) => item === "IV")?.length
+      ? "SI"
+      : "NO";
+    const valLocV = _valuesLOC.find((item) => item === "V")?.length
+      ? "SI"
+      : "NO";
+    const valLocVI = _valuesLOC.find((item) => item === "VI")?.length
+      ? "SI"
+      : "NO";
+    const valLocVII = _valuesLOC.find((item) => item === "VII")?.length
+      ? "SI"
+      : "NO";
+    const valLocVIII = _valuesLOC.find((item) => item === "VIII")?.length
+      ? "SI"
+      : "NO";
+
+    try {
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_I.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_I.VALUES[valLocI]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_II.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_II.VALUES[valLocII]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_III.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_III.VALUES[valLocIII]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_IV.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_IV.VALUES[valLocIV]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_V.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_V.VALUES[valLocV]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VI.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VI.VALUES[valLocVI]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VII.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VII.VALUES[valLocVII]
+      );
+      await frame.select(
+        basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VIII.ID),
+        HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VIII.VALUES[valLocVIII]
+      );
+    } catch (e) {
+      console.error("!!!!!!", e);
+    }
+
     const iQSimuTumorPrimary =
       currentObservation[HEADERS_LIVER_DDBB.CIRSIMCOLON];
 

@@ -117,15 +117,39 @@ export const HTML_IDS_LIVER = {
     ID: "#form\\3A INPUT_6779_44691_137411",
     VALUES: NOSINOC,
   },
-  LOC_TUMOR_AL_DX_NOTIMPLEMENTEDYET: {
-    LOC_SEG_I: "",
-    LOC_SEG_II: "",
-    LOC_SEG_III: "",
-    LOC_SEG_IV: "",
-    LOC_SEG_V: "",
-    LOC_SEG_VI: "",
-    LOC_SEG_VII: "",
-    LOC_SEG_VIII: "",
+  LOC_TUMOR_AL_DX: {
+    LOC_SEG_I: {
+      ID: "form:INPUT_6779_44691_166971",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_II: {
+      ID: "form:INPUT_6779_44691_166972",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_III: {
+      ID: "form:INPUT_6779_44691_166973",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_IV: {
+      ID: "form:INPUT_6779_44691_166974",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_V: {
+      ID: "form:INPUT_6779_44691_166975",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_VI: {
+      ID: "form:INPUT_6779_44691_166976",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_VII: {
+      ID: "form:INPUT_6779_44691_166977",
+      VALUES: NOSINOC,
+    },
+    LOC_SEG_VIII: {
+      ID: "form:INPUT_6779_44691_166978",
+      VALUES: NOSINOC,
+    },
   },
   IQ_SIMULT_TUMOR_PRIMARI: {
     ID: "form:INPUT_6779_44691_166841",
