@@ -55,9 +55,14 @@ const PuppeteerDeleteAndType = async (
   value: string
 ) => {
   // done since This shitty form has some way to control when Typed / scrolled / clciked
-  await frame.$eval(element, (el: any, value) => (el.value = value), "");
+  try {
+    await frame.$eval(element, (el: any, value) => (el.value = value), "");
 
-  await frame.type(element, value);
+    await frame.type(element, value);
+  } catch (e) {
+    console.error("SOMETHING WENT WRONG WITH PUPPETEER DELETE AND TYPE: ");
+    console.error(e);
+  }
 };
 
 type InterfacePuppeteerSetupRes = {
@@ -250,7 +255,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = initialCount; i < 10; i++) {
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -291,7 +296,7 @@ const getScrappingData = async () => {
     //   -50
     // ); // !!
 
-    const ValueEstada = currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "0"; // minim temps d'estada?
+    const ValueEstada = currentObservation[HEADERS_LIVER_DDBB.ESTADA] || "2"; // minim temps d'estada?
 
     console.log("ValueEstada: ", ValueEstada);
     console.log("parseInt(ValueEstada): ", parseInt(ValueEstada));
@@ -304,8 +309,10 @@ const getScrappingData = async () => {
     // !! estada not always defined
 
     const ValueEdatIQ = currentObservation[HEADERS_LIVER_DDBB.EDAT];
-    const ValuePes = currentObservation[HEADERS_LIVER_DDBB.PES].toString(); //??
-    const ValueTalla = currentObservation[HEADERS_LIVER_DDBB.Talla].toString(); //??
+    const ValuePes =
+      currentObservation[HEADERS_LIVER_DDBB.PES]?.toString() || "999"; //??
+    const ValueTalla =
+      currentObservation[HEADERS_LIVER_DDBB.Talla]?.toString() || "999"; //??
     const ValueASA = currentObservation[HEADERS_LIVER_DDBB.ASA];
     const ValueEcog = "NO-VALORAT"; //??
     const ValueEras = "NO"; //??
@@ -372,8 +379,6 @@ const getScrappingData = async () => {
         // Also might reload to go to Search and abstract search function to reuse here
         await goBackFromForm(frame);
         await goBackFromList(frame);
-
-        break;
       }
     } catch (e) {
       console.error("UNABLE TO EXECUTE NHC COMPARISON");
@@ -438,6 +443,8 @@ const getScrappingData = async () => {
       !DataIngresInOddFormat
     ) {
       const errorMessage = "Error en alguna fechas formateadas, revisar";
+      console.log(currentNHC, errorMessage);
+
       errors.push(errorMessage);
       addToUncompletedList(currentObservation, errorMessage);
       continue;
@@ -794,15 +801,15 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
-    const numReseccPrev = currentObservation[HEADERS_LIVER_DDBB.RES3]
-      ? "2"
-      : currentObservation[HEADERS_LIVER_DDBB.RES2]
-      ? "1"
-      : "0";
+    const RES2 = currentObservation[HEADERS_LIVER_DDBB.RES2];
+    const RES3 = currentObservation[HEADERS_LIVER_DDBB.RES3];
+    const numReseccPrev =
+      RES3 && RES3 === "Si" ? "2" : RES2 && RES2 === "Si" ? "1" : "0";
 
     console.log("numReseccPrev: ", numReseccPrev);
 
     const affBilob = currentObservation[HEADERS_LIVER_DDBB.BILOBUL];
+    console.log("affBilob", affBilob);
 
     await PuppeteerDeleteAndType(
       frame,
@@ -819,35 +826,20 @@ const getScrappingData = async () => {
     } catch (e) {
       console.error("!!!!!!", e);
     }
+    // break;
 
     // need to parse text
     const _valuesLOC =
       currentObservation[HEADERS_LIVER_DDBB.LOCTUMOR]?.split(",") || [];
 
-    const valLocI = _valuesLOC.find((item) => item === "I")?.length
-      ? "SI"
-      : "NO";
-    const valLocII = _valuesLOC.find((item) => item === "II")?.length
-      ? "SI"
-      : "NO";
-    const valLocIII = _valuesLOC.find((item) => item === "III")?.length
-      ? "SI"
-      : "NO";
-    const valLocIV = _valuesLOC.find((item) => item === "IV")?.length
-      ? "SI"
-      : "NO";
-    const valLocV = _valuesLOC.find((item) => item === "V")?.length
-      ? "SI"
-      : "NO";
-    const valLocVI = _valuesLOC.find((item) => item === "VI")?.length
-      ? "SI"
-      : "NO";
-    const valLocVII = _valuesLOC.find((item) => item === "VII")?.length
-      ? "SI"
-      : "NO";
-    const valLocVIII = _valuesLOC.find((item) => item === "VIII")?.length
-      ? "SI"
-      : "NO";
+    const valLocI = _valuesLOC.find((item) => item === "I") ? "SI" : "NO";
+    const valLocII = _valuesLOC.find((item) => item === "II") ? "SI" : "NO";
+    const valLocIII = _valuesLOC.find((item) => item === "III") ? "SI" : "NO";
+    const valLocIV = _valuesLOC.find((item) => item === "IV") ? "SI" : "NO";
+    const valLocV = _valuesLOC.find((item) => item === "V") ? "SI" : "NO";
+    const valLocVI = _valuesLOC.find((item) => item === "VI") ? "SI" : "NO";
+    const valLocVII = _valuesLOC.find((item) => item === "VII") ? "SI" : "NO";
+    const valLocVIII = _valuesLOC.find((item) => item === "VIII") ? "SI" : "NO";
 
     try {
       await frame.select(
@@ -926,7 +918,6 @@ const getScrappingData = async () => {
     } catch (e) {
       console.error("!!!!!!", e);
     }
-
     try {
       if (tipusReseccioMH === "MAJOR_EXTESA") {
         const valueALPSS = currentObservation[HEADERS_LIVER_DDBB.ALPSS];
@@ -1161,6 +1152,8 @@ const getScrappingData = async () => {
       console.error("!!!!!!", e);
     }
 
+    // break;
+
     // *****************
     // AP
     //
@@ -1308,9 +1301,9 @@ const getScrappingData = async () => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
-    break;
     await saveForm(frame);
     await goBackFromList(frame);
+    // break;
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
 
@@ -1330,7 +1323,7 @@ const basicParseID = (noParsedId: string) => {
 };
 
 const NoSiParse = (val: string) =>
-  val === "No" ? "NO" : val === "Si" ? "SI" : "NOCONSTA";
+  !val ? "NOCONSTA" : val === "No" ? "NO" : val === "Si" ? "SI" : "NOCONSTA";
 
 const AsumeNoIfUnknown = (val: string) => (val && val.length ? val : "No");
 
@@ -1459,7 +1452,8 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
   // Integrate existing Python library: https://github.com/cdslaborg/paramonte
   // with BOA: https://medium.com/imgcook/boa-use-python-functions-in-node-js-8946d413fbe3
 
-  const errorMargin = 0.05;
+  const errorMargin =
+    maxClavien === "I" ? 0.5 : maxClavien === "II" ? 0.3 : 0.1;
 
   let ClavienGradesCount: ClavienDindoCountArrType = [
     // will be only one
@@ -1482,7 +1476,9 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
   const isIntoUpperBoundary = (value: number) => value < upperBoundary;
 
   // this will be a while
-  while (true) {
+  let iteration = 0;
+  while (iteration < 20) {
+    ++iteration;
     // check if match, and return value.
     let isNextToTarget = false;
 
@@ -1499,7 +1495,6 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
 
     // Compute corrections
 
-    console.log(computeClavienDindo(ClavienGradesCount));
     const _testMatrix = await JSON.parse(JSON.stringify(ClavienGradesCount));
     const _testValue = _testMatrix.find((item) => item.name === lastGrade);
     ++_testValue.count;
@@ -1521,6 +1516,7 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
       const nextIndex = foundValue.index - 1;
 
       if (nextIndex === 0) {
+        return ClavienGradesCount;
       } else {
         lastGrade = ClavienGradesCount.find(
           (item) => item.index === nextIndex
