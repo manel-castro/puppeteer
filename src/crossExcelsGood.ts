@@ -37,7 +37,7 @@ export const parseXlsx2 = (fileName: string, sheetName: string) => {
     const res = xlsx.utils.sheet_to_json(workSheetsFromFile, {
       dateNF: 'dd"."mm"."yyyy',
 
-      blankrows: true,
+      blankrows: false,
     });
 
     return res;

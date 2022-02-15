@@ -26,6 +26,7 @@ import {
   ypTNMType,
   ypTtype,
 } from "./consts/TNMRelations";
+import { getJsFormatFromOddDate } from "./crossExcels";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -255,7 +256,8 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = initialCount; i < 10; i++) {
+  for (let i = 0; i < 10; i++) {
+    // await registerCurrentObservationNumber(i);
     const errors = [];
 
     const currentObservation = ddbbData[i];
@@ -264,6 +266,7 @@ const getScrappingData = async () => {
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
     const isSecondObs = currentLastName.includes("2");
 
+    if (currentNHC != 18493694) continue;
     console.log("name is: ", currentLastName);
 
     if (isSecondObs) {
@@ -536,11 +539,24 @@ const getScrappingData = async () => {
     //       )
     //     )
     //   : ""; // !!  2 months before aprox
+    console.log("ValueFechaUltCMD: ", ValueFechaUltCMD);
+    console.log(
+      "ValueFechaUltCMD: ",
+      new Date(getJsFormatFromOddDate(ValueFechaUltCMD))
+    );
+
     const ValueCMDAfter: keyof NOSINOCType = !ValueFechaUltCMD
       ? "NOCONSTA"
-      : new Date(ValueFechaUltCMD).getTime() > ValueDataIngres
+      : new Date(getJsFormatFromOddDate(ValueFechaUltCMD)).getTime() >
+        ValueDataIngres
       ? "SI"
       : "NO"; // !!
+
+    console.log(
+      "new Date(ValueFechaUltCMD).getTime(): ",
+      new Date(ValueFechaUltCMD).getTime()
+    );
+    console.log("ValueDataIngres: ", ValueDataIngres);
 
     const ValueTipusCirugHepatica = "MTHs";
 
@@ -832,14 +848,30 @@ const getScrappingData = async () => {
     const _valuesLOC =
       currentObservation[HEADERS_LIVER_DDBB.LOCTUMOR]?.split(",") || [];
 
-    const valLocI = _valuesLOC.find((item) => item === "I") ? "SI" : "NO";
-    const valLocII = _valuesLOC.find((item) => item === "II") ? "SI" : "NO";
-    const valLocIII = _valuesLOC.find((item) => item === "III") ? "SI" : "NO";
-    const valLocIV = _valuesLOC.find((item) => item === "IV") ? "SI" : "NO";
-    const valLocV = _valuesLOC.find((item) => item === "V") ? "SI" : "NO";
-    const valLocVI = _valuesLOC.find((item) => item === "VI") ? "SI" : "NO";
-    const valLocVII = _valuesLOC.find((item) => item === "VII") ? "SI" : "NO";
-    const valLocVIII = _valuesLOC.find((item) => item === "VIII") ? "SI" : "NO";
+    const valLocI = _valuesLOC.find((item) => item.trim() === "I")
+      ? "SI"
+      : "NO";
+    const valLocII = _valuesLOC.find((item) => item.trim() === "II")
+      ? "SI"
+      : "NO";
+    const valLocIII = _valuesLOC.find((item) => item.trim() === "III")
+      ? "SI"
+      : "NO";
+    const valLocIV = _valuesLOC.find((item) => item.trim() === "IV")
+      ? "SI"
+      : "NO";
+    const valLocV = _valuesLOC.find((item) => item.trim() === "V")
+      ? "SI"
+      : "NO";
+    const valLocVI = _valuesLOC.find((item) => item.trim() === "VI")
+      ? "SI"
+      : "NO";
+    const valLocVII = _valuesLOC.find((item) => item.trim() === "VII")
+      ? "SI"
+      : "NO";
+    const valLocVIII = _valuesLOC.find((item) => item.trim() === "VIII")
+      ? "SI"
+      : "NO";
 
     try {
       await frame.select(
@@ -1233,15 +1265,14 @@ const getScrappingData = async () => {
         "00/00/2000";
 
       // Causa exitus:
-      const _perComplPostOP =
-        _grauClavien === "V"; // nomes clavien V
-      const _perRecidiva = _estatPacient === "Mort (amb recidiva)"
+      const _perComplPostOP = _grauClavien === "V"; // nomes clavien V
+      const _perRecidiva = _estatPacient === "Mort (amb recidiva)";
 
-        // currentObservation[HEADERS_LIVER_DDBB.RECHEP] === "Si"; //?? PK
+      // currentObservation[HEADERS_LIVER_DDBB.RECHEP] === "Si"; //?? PK
       // const _recidibaPulmonar = currentObservation[HEADERS_LIVER_DDBB.RECPUL]; //?? PK
 
-      const _perProgressioTumoral = // no n'hi ha a la BBDD
-        
+      // const _perProgressioTumoral = // no n'hi ha a la BBDD
+
       // _recidibaPulmonar && _recidibaPulmonar.includes("Progressió");
 
       // mort amb recidiva / tumor : estat == Mort (amb recidiva)
@@ -1250,7 +1281,8 @@ const getScrappingData = async () => {
       // recidiva == 1 = recidiva => per progessio recidiva
       // altres: altres
 
-      const valueCausaExitus: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES = _perRecidiva
+      const valueCausaExitus: keyof typeof HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES =
+        _perRecidiva
           ? "MALALT_TUMOR_RECIDIVA"
           : _perComplPostOP
           ? "COMPL_POSTOP"
@@ -1289,21 +1321,15 @@ const getScrappingData = async () => {
 
     console.log("finished with obs nº: ", i);
     console.log("NHC: ", currentNHC);
-    if (currentNHC === "13005406") {
-      console.error("ommiting 13005406, erroing data");
 
-      continue;
-    }
-
-    registerCurrentObservationNumber(i);
     await addToCompletedList(currentObservation);
     console.log(currentNHC, " added to completed register");
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
+    break;
     await saveForm(frame);
     await goBackFromList(frame);
-    // break;
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
 
@@ -1351,6 +1377,9 @@ const addToUncompletedList = async (
 
   const timestamp = new Date(Date.now());
 
+  // console.log("uncompleted Register: ", ddbbData);
+  // console.log("completed data: ", currentObservation);
+
   buildXlsxFile2(
     "uncompletedRegister",
     [...(ddbbData as any[]), { ...currentObservation, timestamp, errorType }],
@@ -1366,6 +1395,8 @@ const addToCompletedList = async (currentObservation: any) => {
 
   const timestamp = new Date(Date.now());
 
+  // console.log("completed Register: ", ddbbData);
+  // console.log("completed data: ", currentObservation);
   buildXlsxFile2(
     "completedRegister",
     [...ddbbData, { ...currentObservation, timestamp }],
@@ -1373,8 +1404,8 @@ const addToCompletedList = async (currentObservation: any) => {
   );
 };
 
-const registerCurrentObservationNumber = (currentObsNum: number) => {
-  fs.writeFileSync(
+const registerCurrentObservationNumber = async (currentObsNum: number) => {
+  await fs.writeFileSync(
     "register/lastObservationNum.txt",
     currentObsNum.toString(),
     "utf-8"
