@@ -256,9 +256,10 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 11; i++) {
     // await registerCurrentObservationNumber(i);
     const errors = [];
+    console.log("i");
 
     const currentObservation = ddbbData[i];
 
@@ -266,7 +267,7 @@ const getScrappingData = async () => {
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
     const isSecondObs = currentLastName.includes("2");
 
-    if (currentNHC != 13296015) continue;
+    if (currentNHC != 10207678) continue;
     console.log("name is: ", currentLastName);
 
     if (isSecondObs && false) {
@@ -1042,37 +1043,44 @@ const getScrappingData = async () => {
         );
         await PuppeteerDeleteAndType(
           frame,
-          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_I),
+          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_II),
           clavienDindoEstimations
             .find((item) => item.name === "II")
             .count.toString()
         );
         await PuppeteerDeleteAndType(
           frame,
-          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_I),
+          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_IIIA),
           clavienDindoEstimations
             .find((item) => item.name === "IIIa")
             .count.toString()
         );
         await PuppeteerDeleteAndType(
           frame,
-          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_I),
+          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_IIIB),
           clavienDindoEstimations
             .find((item) => item.name === "IIIb")
             .count.toString()
         );
         await PuppeteerDeleteAndType(
           frame,
-          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_I),
+          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_IVA),
           clavienDindoEstimations
             .find((item) => item.name === "IVa")
             .count.toString()
         );
         await PuppeteerDeleteAndType(
           frame,
-          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_I),
+          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_IVB),
           clavienDindoEstimations
             .find((item) => item.name === "IVb")
+            .count.toString()
+        );
+        await PuppeteerDeleteAndType(
+          frame,
+          basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_V),
+          clavienDindoEstimations
+            .find((item) => item.name === "V")
             .count.toString()
         );
 
@@ -1289,6 +1297,8 @@ const getScrappingData = async () => {
       );
     } catch (e) {
       console.error("!!!!!!", e);
+      const errorMessage = "Error with MidaAp or NumAp";
+      await addToUncompletedList(currentObservation, errorMessage);
     }
 
     // *****************
@@ -1490,7 +1500,7 @@ type ClavienDindoCountType = {
   gradeIVa: number;
   gradeIVb: number;
 };
-type ClavienDindoGrades = "I" | "II" | "IIIa" | "IIIb" | "IVa" | "IVb";
+type ClavienDindoGrades = "I" | "II" | "IIIa" | "IIIb" | "IVa" | "IVb" | "V";
 
 type ClavienDindoCountArrType = {
   name: ClavienDindoGrades;
@@ -1544,7 +1554,12 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
     { name: "IIIb", index: 4, count: maxClavien === "IIIb" ? 1 : 0 },
     { name: "IVa", index: 5, count: maxClavien === "IVa" ? 1 : 0 },
     { name: "IVb", index: 6, count: maxClavien === "IVb" ? 1 : 0 },
+    { name: "V", index: 6, count: maxClavien === "V" ? 1 : 0 },
   ];
+
+  if (maxClavien === "V") return ClavienGradesCount;
+
+  maxClavien = maxClavien as ClavienDindoGrades;
 
   // save last value that doesn't fit (Start by the one which is maximum)
   let lastGrade = maxClavien;
