@@ -1400,7 +1400,7 @@ const getScrappingData = async () => {
   }
 };
 
-getScrappingData();
+// getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1624,6 +1624,59 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
       }
     }
   }
+};
+
+const computeIsBrisbane = (TECNICA: string, TecnicaQuir_descripció: string) => {
+  const tecnica = TECNICA.toLocaleLowerCase();
+  const textTecnica = TecnicaQuir_descripció.toLocaleLowerCase();
+
+  const conditions = tecnica.includes("limitada");
+
+  if (conditions) {
+    return false;
+  } else {
+    return true;
+  }
+  // if()
+};
+
+type TecnicaType =
+  | "Hepatectomia dreta"
+  | "Hepatectomia esquerra"
+  | "Segmentectomia o Bisegmentectomia"
+  | "Resecció/ns limitada/es"
+  | "Bisegmentectomia 2-3"
+  | "Hepatectomia dreta + caudat"
+  | "Hepatectomia esquerra + caudat"
+  | "Triseccionectomia dreta"
+  | "Triseccionectomia esquerra"
+  | "Hepatectomia medial"
+  | "Hepatectomia major + resecció contralateral"
+  | "Radiofreqüència sense resecció"
+  | "Hepatectomia menor + resecció contralateral"
+  | "Resecció caudat";
+
+const computeBrisbaneLocations = (
+  TECNICA: string,
+  TecnicaQuir_descripció: string
+) => {
+  const brisbaneLocationsInIco = {
+    hepatectomiaDreta: false,
+    hepatectomiaEsquerra: false,
+    hepatectomiaAmpliadaDreta: false,
+    hepatectomiaAmpliadaEsquerra: false,
+    SeccionectomiaAnteriorDreta: false,
+    SeccionectomiaPosteriorDreta: false,
+    Bisegmentectomia2i3: false,
+    Bisegmentectomia6i7: false,
+    Bisegmentectomia5i8: false,
+    BisegmentectomiaAltra: false,
+    Segmentectomia1a8: false,
+  };
+
+  const;
+
+  // if(TECNICA)
 };
 
 // (async () =>
