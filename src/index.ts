@@ -1657,24 +1657,28 @@ type TecnicaType =
   | "Resecció caudat";
 
 const computeBrisbaneLocations = (
-  TECNICA: string,
+  TECNICA: TecnicaType,
   TecnicaQuir_descripció: string
 ) => {
   const brisbaneLocationsInIco = {
-    hepatectomiaDreta: false,
-    hepatectomiaEsquerra: false,
-    hepatectomiaAmpliadaDreta: false,
+    hepatectomiaDreta:
+      TECNICA === "Hepatectomia dreta" ||
+      TECNICA === "Hepatectomia dreta + caudat",
+    hepatectomiaEsquerra:
+      TECNICA === "Hepatectomia esquerra" ||
+      TECNICA === "Hepatectomia esquerra + caudat",
+    hepatectomiaAmpliadaDreta: TECNICA === "",
     hepatectomiaAmpliadaEsquerra: false,
     SeccionectomiaAnteriorDreta: false,
     SeccionectomiaPosteriorDreta: false,
-    Bisegmentectomia2i3: false,
-    Bisegmentectomia6i7: false,
+    Bisegmentectomia2i3: TECNICA === "Bisegmentectomia 2-3",
+    Bisegmentectomia6i7: TECNICA === "",
     Bisegmentectomia5i8: false,
     BisegmentectomiaAltra: false,
-    Segmentectomia1a8: false,
+    Segmentectomia1a8: TECNICA === "Resecció caudat" || TECNICA === "",
   };
 
-  const;
+  // if hepa + caudat => add segmentectomia1a8
 
   // if(TECNICA)
 };
