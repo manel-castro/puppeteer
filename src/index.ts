@@ -444,9 +444,9 @@ const getScrappingData = async () => {
           new Date(ValueDataIngres)
         );
 
-    const oneYearInMilliseconds = getDiffBetweenTwoDates(
+    const halfYearInMilliseconds = getDiffBetweenTwoDates(
       new Date(98, 1),
-      new Date(97, 1)
+      new Date(97, 7)
     );
 
     const twoMonthsInMilliseconds = getDiffBetweenTwoDates(
@@ -456,7 +456,7 @@ const getScrappingData = async () => {
 
     const DataDiagnosticInOddFormat =
       !diffDateIqAndDiagnosticInMilliseconds ||
-      diffDateIqAndDiagnosticInMilliseconds > oneYearInMilliseconds
+      diffDateIqAndDiagnosticInMilliseconds > halfYearInMilliseconds
         ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
         : ValueDataDiagnostic;
 
