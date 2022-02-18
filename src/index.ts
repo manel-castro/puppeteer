@@ -52,14 +52,20 @@ const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
 
 const PuppeteerDeleteAndType = async (
   frame: puppeteer.Frame,
-  element: string,
+  elementId: string,
   value: string
 ) => {
   // done since This shitty form has some way to control when Typed / scrolled / clciked
-  try {
-    await frame.$eval(element, (el: any, value) => (el.value = value), "");
 
-    await frame.type(element, value);
+  try {
+    const oldValue = (await await frame.$eval(elementId, (el: any, frame) => {
+      return el.value;
+    })) as string;
+    console.log("value delete&type: ", oldValue);
+
+    await frame.$eval(elementId, (el: any, value) => (el.value = value), "");
+
+    await frame.type(elementId, value);
   } catch (e) {
     console.error("SOMETHING WENT WRONG WITH PUPPETEER DELETE AND TYPE: ");
     console.error(e);
@@ -256,7 +262,7 @@ const getScrappingData = async () => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 0; i < 11; i++) {
+  for (let i = 10; i < 12; i++) {
     await registerCurrentObservationNumber(i);
     const errors = [];
     console.log("i");
@@ -1516,7 +1522,7 @@ const getScrappingData = async () => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
-    // break;
+    break;
     await saveForm(frame);
     await goBackFromList(frame);
 
