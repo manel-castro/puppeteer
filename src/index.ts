@@ -58,9 +58,9 @@ const { BUTTON_BACK_LIST, LINK_LIST_ITEM } = INTERFACE_IDS.LIST_PAGE;
 const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
 
 const excelQARegister = {
-  headers: ["NHC", "Type"],
-  oldValues: ["", "Old Values"],
-  newValues: ["", "New Values"],
+  headers: ["NHC", "Timestamp", "Type"],
+  oldValues: ["", "", "Old Values"],
+  newValues: ["", "", "New Values"],
 };
 
 const PuppeteerDeleteAndType = async (
@@ -99,7 +99,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/b6cb0434-6a52-4912-a5f3-b730f6d8c444",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/f6c37e15-a3d3-4686-83b0-9f853fde6816",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -1622,11 +1622,13 @@ const addToQARegister = async (
     Object.assign(firstRow, { [item]: currentObsRegister.oldValues[index] });
   });
   Object.assign(firstRow, { [currentObsRegister.headers[0]]: patientNhc });
+  Object.assign(firstRow, { [currentObsRegister.headers[1]]: timestamp });
 
   const secondRow = {};
   currentObsRegister.headers.forEach((item, index) => {
     Object.assign(secondRow, { [item]: currentObsRegister.newValues[index] });
   });
+  // Object.assign(secondRow, { [currentObsRegister.headers[1]]: timestamp });
 
   const thirdRow = {};
   currentObsRegister.headers.forEach((item, index) => {
