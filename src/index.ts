@@ -7,7 +7,14 @@ import { buildXlsxFile2, HEADERS_LIVER_DDBB } from "./crossExcelsGood";
 import moment from "moment";
 
 import { INTERFACE_IDS } from "./consts/general";
-import { HTML_IDS_LIVER, NOSINOC, NOSINOCType, NS_NOSI } from "./consts/fetge";
+import {
+  basicParseID,
+  getKeyFromEntryId,
+  HTML_IDS_LIVER,
+  NOSINOC,
+  NOSINOCType,
+  NS_NOSI,
+} from "./consts/fetge";
 
 import { parseXlsx2 } from "./crossExcelsGood";
 import {
@@ -1537,11 +1544,12 @@ const getScrappingData = async () => {
   }
 };
 
-getScrappingData();
+// getScrappingData();
 
-const basicParseID = (noParsedId: string) => {
-  return "#" + noParsedId.replace(":", "\\3A ");
-};
+console.log(
+  "KEY FOUND",
+  getKeyFromEntryId(HTML_IDS_LIVER, "#form\\3A INPUT_6779_44691_166787")
+);
 
 const NoSiParse = (val: string) =>
   !val ? "NOCONSTA" : val === "No" ? "NO" : val === "Si" ? "SI" : "NOCONSTA";

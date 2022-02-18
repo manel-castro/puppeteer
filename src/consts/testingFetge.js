@@ -8,7 +8,7 @@ export const NS_NOSI = {
   false: "N",
   true: "S",
 };
-export type NOSINOCType = typeof NOSINOC;
+
 const ABC = {
   A: "1",
   B: "2",
@@ -16,7 +16,7 @@ const ABC = {
   DESCONEGUT: "9",
 };
 
-export const basicParseID = (noParsedId: string) => {
+export const basicParseID = (noParsedId) => {
   return "#" + noParsedId.replace(":", "\\3A ");
 };
 
@@ -392,3 +392,9 @@ export const HTML_IDS_LIVER = {
     },
   },
 };
+
+console.log(
+  "result: ",
+  getKeyFromEntryId(HTML_IDS_LIVER, "form:INPUT_6779_44691_137402")
+);
+console.log("depthIteration: ", depthIteration);
