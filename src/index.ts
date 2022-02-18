@@ -73,7 +73,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/8e6bdf4b-337d-4b58-9150-a66a46c60b2b",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/b6cb0434-6a52-4912-a5f3-b730f6d8c444",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -265,10 +265,33 @@ const getScrappingData = async () => {
 
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
-    const isSecondObs = currentLastName.includes("2");
+    const isSecondObs = currentLastName.includes("2"); // not necessarely double form
 
-    if (currentNHC != 10207678) continue;
-    if (currentNHC === 13005406) continue;
+    const doneNHCs = [12816340, 13067884, 13296015, 10207678];
+    const detectedErrorNHCs = [10207678, 13005406];
+    const doubleFormInput = [13297134];
+
+    const continueIfExistAny = (NHCArray: number[]) =>
+      NHCArray.some((item) => item === currentNHC);
+
+    // test only one
+    // if (currentNHC != 10207678) continue;
+
+    // omit multiple
+    if (
+      continueIfExistAny([
+        ...doneNHCs,
+        ...detectedErrorNHCs,
+        ...doubleFormInput,
+      ])
+    ) {
+      console.log(
+        "ommiting, is already completed, erroed, or 'Double to check'"
+      );
+
+      continue;
+    }
+
     console.log("name is: ", currentLastName);
 
     if (isSecondObs && false) {
@@ -557,7 +580,7 @@ const getScrappingData = async () => {
     const ValueCMDInforme = ValueCMDAbans;
     const ValueCMDAbansData = isDataDiagnosticUnrealistic
       ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
-      : ValueDataIngres;
+      : ValueFecha1rCMD;
 
     // next code can only work if ValueDataDiagnostic still not formated
     // ValueCMDAbans
