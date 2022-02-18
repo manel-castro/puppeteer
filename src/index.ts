@@ -57,6 +57,12 @@ const {
 const { BUTTON_BACK_LIST, LINK_LIST_ITEM } = INTERFACE_IDS.LIST_PAGE;
 const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
 
+const excelQARegister = {
+  headers: ["NHC", "Type"],
+  oldValues: ["", "Old Values"],
+  newValues: ["", "New Values"],
+};
+
 const PuppeteerDeleteAndType = async (
   frame: puppeteer.Frame,
   elementId: string,
@@ -65,10 +71,17 @@ const PuppeteerDeleteAndType = async (
   // done since This shitty form has some way to control when Typed / scrolled / clciked
 
   try {
+    // register logic
+    const valueName = getKeyFromEntryId(HTML_IDS_LIVER, elementId);
     const oldValue = (await await frame.$eval(elementId, (el: any, frame) => {
       return el.value;
     })) as string;
-    console.log("value delete&type: ", oldValue);
+    const newValue = value;
+    console.log("VALUE NAME: ", valueName);
+
+    excelQARegister.headers.push(valueName);
+    excelQARegister.oldValues.push(oldValue);
+    excelQARegister.newValues.push(newValue);
 
     await frame.$eval(elementId, (el: any, value) => (el.value = value), "");
 
@@ -1525,6 +1538,7 @@ const getScrappingData = async () => {
     console.log("NHC: ", currentNHC);
 
     await addToCompletedList(currentObservation);
+    await addToQARegister(excelQARegister, currentNHC);
     console.log(currentNHC, " added to completed register");
     console.log("SAVING AND GOING TO SEARCH FORM");
 
@@ -1544,12 +1558,12 @@ const getScrappingData = async () => {
   }
 };
 
-// getScrappingData();
+getScrappingData();
 
-console.log(
-  "KEY FOUND",
-  getKeyFromEntryId(HTML_IDS_LIVER, "#form\\3A INPUT_6779_44691_166787")
-);
+// console.log(
+//   "KEY FOUND",
+//   getKeyFromEntryId(HTML_IDS_LIVER, "#form\\3A INPUT_6779_44691_166787")
+// );
 
 const NoSiParse = (val: string) =>
   !val ? "NOCONSTA" : val === "No" ? "NO" : val === "Si" ? "SI" : "NOCONSTA";
@@ -1588,6 +1602,45 @@ const addToUncompletedList = async (
     [...(ddbbData as any[]), { ...currentObservation, timestamp, errorType }],
     "register"
   );
+};
+
+const addToQARegister = async (
+  currentObsRegister: typeof excelQARegister,
+  patientNhc: string
+) => {
+  const ddbbData = await parseXlsx2("register/QARegister", "QARegister");
+
+  //setHeaders
+  // ddbbData[0] = ["", "Timestamp", ...currentObsRegister.headers];
+  const timestamp = new Date(Date.now());
+
+  // console.log("completed Register: ", ddbbData);
+  // console.log("completed data: ", currentObservation);
+
+  const firstRow = {};
+  currentObsRegister.headers.forEach((item, index) => {
+    Object.assign(firstRow, { [item]: currentObsRegister.oldValues[index] });
+  });
+  Object.assign(firstRow, { [currentObsRegister.headers[0]]: patientNhc });
+
+  const secondRow = {};
+  currentObsRegister.headers.forEach((item, index) => {
+    Object.assign(secondRow, { [item]: currentObsRegister.newValues[index] });
+  });
+
+  const thirdRow = {};
+  currentObsRegister.headers.forEach((item, index) => {
+    Object.assign(thirdRow, { [item]: "-" });
+  });
+
+  const xlsxSheet = [...ddbbData];
+
+  buildXlsxFile2(
+    "QARegister",
+    [...ddbbData, firstRow, secondRow, thirdRow],
+    "register"
+  );
+  console.log("added to QA register");
 };
 
 const addToCompletedList = async (currentObservation: any) => {
