@@ -267,7 +267,7 @@ const getScrappingData = async () => {
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
     const isSecondObs = currentLastName.includes("2");
 
-    if (currentNHC != 13296015) continue;
+    if (currentNHC != 10207678) continue;
     if (currentNHC === 13005406) continue;
     console.log("name is: ", currentLastName);
 
@@ -449,16 +449,20 @@ const getScrappingData = async () => {
       new Date(97, 7)
     );
 
+    console.log("halfYearInMilliseconds: ", halfYearInMilliseconds);
+
     const twoMonthsInMilliseconds = getDiffBetweenTwoDates(
       new Date(98, 1),
       new Date(98, 3)
     );
 
-    const DataDiagnosticInOddFormat =
+    const isDataDiagnosticUnrealistic =
       !diffDateIqAndDiagnosticInMilliseconds ||
-      diffDateIqAndDiagnosticInMilliseconds > halfYearInMilliseconds
-        ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
-        : ValueDataDiagnostic;
+      diffDateIqAndDiagnosticInMilliseconds > halfYearInMilliseconds;
+
+    const DataDiagnosticInOddFormat = isDataDiagnosticUnrealistic
+      ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
+      : ValueDataDiagnostic;
 
     const DataIQInOddFormat = formatDate(ValueDataIQ);
 
@@ -551,7 +555,9 @@ const getScrappingData = async () => {
       "NOCONSTA";
 
     const ValueCMDInforme = ValueCMDAbans;
-    const ValueCMDAbansData = ValueFecha1rCMD;
+    const ValueCMDAbansData = isDataDiagnosticUnrealistic
+      ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
+      : ValueDataIngres;
 
     // next code can only work if ValueDataDiagnostic still not formated
     // ValueCMDAbans
@@ -1487,7 +1493,7 @@ const getScrappingData = async () => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
-    break;
+    // break;
     await saveForm(frame);
     await goBackFromList(frame);
 
