@@ -26,7 +26,7 @@ import {
   ypTNMType,
   ypTtype,
 } from "./consts/TNMRelations";
-import { getJsFormatFromOddDate } from "./crossExcels";
+import { getDiffBetweenTwoDates, getJsFormatFromOddDate } from "./crossExcels";
 
 const __filename = fileURLToPath(import.meta.url);
 
@@ -257,7 +257,7 @@ const getScrappingData = async () => {
   const initialCount = whereWeLeftIt + 1 || 0;
 
   for (let i = 0; i < 11; i++) {
-    // await registerCurrentObservationNumber(i);
+    await registerCurrentObservationNumber(i);
     const errors = [];
     console.log("i");
 
@@ -267,7 +267,8 @@ const getScrappingData = async () => {
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
     const isSecondObs = currentLastName.includes("2");
 
-    // if (currentNHC != 10207678) continue;
+    if (currentNHC != 13296015) continue;
+    if (currentNHC === 13005406) continue;
     console.log("name is: ", currentLastName);
 
     if (isSecondObs && false) {
@@ -436,7 +437,28 @@ const getScrappingData = async () => {
 
     const DataAltaInOddFormat = formatDate(ValueDataAlta);
 
-    const DataDiagnosticInOddFormat = ValueDataDiagnostic;
+    const diffDateIqAndDiagnosticInMilliseconds = !ValueDataDiagnostic
+      ? null
+      : getDiffBetweenTwoDates(
+          getJsFormatFromOddDate(ValueDataDiagnostic),
+          new Date(ValueDataIngres)
+        );
+
+    const oneYearInMilliseconds = getDiffBetweenTwoDates(
+      new Date(98, 1),
+      new Date(97, 1)
+    );
+
+    const twoMonthsInMilliseconds = getDiffBetweenTwoDates(
+      new Date(98, 1),
+      new Date(98, 3)
+    );
+
+    const DataDiagnosticInOddFormat =
+      !diffDateIqAndDiagnosticInMilliseconds ||
+      diffDateIqAndDiagnosticInMilliseconds > oneYearInMilliseconds
+        ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
+        : ValueDataDiagnostic;
 
     const DataIQInOddFormat = formatDate(ValueDataIQ);
 

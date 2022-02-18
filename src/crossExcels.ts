@@ -27,6 +27,9 @@ export const addDaysTo1Jan1900 = (days: number) => {
   return date;
 };
 
+export const getDiffBetweenTwoDates = (date1: Date, date2: Date) =>
+  Math.abs(date2.getTime() - date1.getTime());
+
 export const getJsFormatFromOddDate = (dateOddFormat: string) => {
   // dateOddFormat of type: dd/mm/yy
   const dayMonthYear = dateOddFormat.split("/");
