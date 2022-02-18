@@ -7,7 +7,7 @@ import { buildXlsxFile2, HEADERS_LIVER_DDBB } from "./crossExcelsGood";
 import moment from "moment";
 
 import { INTERFACE_IDS } from "./consts/general";
-import { HTML_IDS_LIVER, NOSINOC, NOSINOCType } from "./consts/fetge";
+import { HTML_IDS_LIVER, NOSINOC, NOSINOCType, NS_NOSI } from "./consts/fetge";
 
 import { parseXlsx2 } from "./crossExcelsGood";
 import {
@@ -73,7 +73,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/2eeff6af-ec89-4372-a60b-bd5e1020c24e",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/8e6bdf4b-337d-4b58-9150-a66a46c60b2b",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -267,7 +267,7 @@ const getScrappingData = async () => {
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
     const isSecondObs = currentLastName.includes("2");
 
-    if (currentNHC != 10207678) continue;
+    // if (currentNHC != 10207678) continue;
     console.log("name is: ", currentLastName);
 
     if (isSecondObs && false) {
@@ -926,7 +926,52 @@ const getScrappingData = async () => {
         ? "MENOR"
         : "NO_CONSTA";
 
-    const tipusBrisbane = "LLEGIR CASOS DEL TecnicaQuir_descripció";
+    const _tipusBrisbane = currentObservation[
+      HEADERS_LIVER_DDBB.BRISBANE
+    ] as string;
+
+    const isReglada: keyof typeof HTML_IDS_LIVER.TIPUS_BRISBANE.VALUES =
+      !_tipusBrisbane
+        ? "NO_CONSTA"
+        : _tipusBrisbane.includes("no reglada")
+        ? "NO_REGLADA"
+        : "REGLADA";
+
+    const regladaLocations: {
+      [K in keyof typeof HTML_IDS_LIVER.LOC_BRISBANE]: string;
+    } = {
+      HEPATECTOMIA_O_HEMIHEPATECTOMIA_DRETA: _tipusBrisbane
+        .includes("hepatectomiaDreta")
+        .toString(),
+      HEPATECTOMIA_O_HEMIHEPATECTOMIA_ESQUERRA: _tipusBrisbane
+        .includes("hepatectomiaEsquerra")
+        .toString(),
+      HEPATECTOMIA_AMP_DRETA: _tipusBrisbane
+        .includes("hepatectomiaAmpliadaDreta")
+        .toString(),
+      HEPATECTOMIA_AMP_ESQUERRA: _tipusBrisbane
+        .includes("hepatectomiaAmpliadaEsquerra")
+        .toString(),
+      SECCIONECTOMIA_O_SECTORECTOMIA_ANTERIOR_DRETA: "false",
+      SECCIONECTOTMIA_O_SECTORECTOMIA_POSTERIOR_DRETA: "false",
+      SECCIONECTOTMIA_MEDIAL_ESQUERRA: "false",
+      SECCIONECTOTMIA_LATERAL_ESQUERRA: "false",
+      SECTORECTOMIA_MEDIAL_ESQUERRA: "false",
+      SECTORECTOMIA_LATERAL_ESQUERRA: "false",
+      BISEGMENTECTOMIA_2_3: _tipusBrisbane
+        .includes("Bisegmentectomia2i3")
+        .toString(),
+      BISEGMENTECTOMIA_6_7: _tipusBrisbane
+        .includes("Bisegmentectomia6i7")
+        .toString(),
+      BISEGMENTECTOMIA_5_8: "false",
+      BISEGMENTECTOMIA_ALTRA: _tipusBrisbane
+        .includes("BisegmentectomiaAltra")
+        .toString(),
+      BISEGMENTECTOMIA_1_A_8: _tipusBrisbane
+        .includes("Segmentectomia1a8")
+        .toString(),
+    };
 
     try {
       await Promise.all([
@@ -940,6 +985,10 @@ const getScrappingData = async () => {
           basicParseID(HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID),
           HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
         ),
+        frame.select(
+          basicParseID(HTML_IDS_LIVER.TIPUS_BRISBANE.ID),
+          HTML_IDS_LIVER.TIPUS_BRISBANE.VALUES[isReglada]
+        ),
         // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
         //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
         //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
@@ -951,6 +1000,37 @@ const getScrappingData = async () => {
     } catch (e) {
       console.error("!!!!!!", e);
     }
+
+    // Brisbane Locations
+    try {
+      if (isReglada) {
+        await (async () => {
+          for (const [key, value] of Object.entries(regladaLocations)) {
+            // console.log("regladaLocations: ", key, " ", value);
+
+            // console.log("brisbane id: ", HTML_IDS_LIVER.LOC_BRISBANE[key].ID);
+            // console.log("brisbane NS_NOSI: ", NS_NOSI["true"]);
+            // console.log(
+            //   "brisbane HTML_IDS_LIVER.LOC_BRISBANE[key].VALUES: ",
+            //   HTML_IDS_LIVER.LOC_BRISBANE[key].VALUES
+            // );
+            // console.log(
+            //   "brisbane value: ",
+            //   HTML_IDS_LIVER.LOC_BRISBANE[key].VALUES["true"]
+            // );
+
+            await frame.select(
+              basicParseID(HTML_IDS_LIVER.LOC_BRISBANE[key].ID),
+              HTML_IDS_LIVER.LOC_BRISBANE[key].VALUES[value]
+            );
+          }
+        })();
+      }
+    } catch (e) {
+      const errorMessage = "Brisbane error";
+    }
+
+    // Liver growth
     try {
       if (tipusReseccioMH === "MAJOR_EXTESA") {
         const valueALPSS = currentObservation[HEADERS_LIVER_DDBB.ALPSS];
@@ -1026,14 +1106,14 @@ const getScrappingData = async () => {
         const clavienGrau = currentObservation[HEADERS_LIVER_DDBB.GRAUCLAVIEN];
         const clavienDindoCCI = currentObservation[HEADERS_LIVER_DDBB.CCIndex];
 
-        console.log("clavienGrau: ", clavienGrau);
+        // console.log("clavienGrau: ", clavienGrau);
 
         const clavienDindoEstimations =
           await estimateCCIInBaseMaxClavienAndTargetCCI(
             clavienGrau,
             clavienDindoCCI
           );
-        console.log("clavienDindoEstimations: ", clavienDindoEstimations);
+        // console.log("clavienDindoEstimations: ", clavienDindoEstimations);
         await PuppeteerDeleteAndType(
           frame,
           basicParseID(HTML_IDS_LIVER.CLAVIEN_DINDO.GRAU_I),
@@ -1400,7 +1480,7 @@ const getScrappingData = async () => {
   }
 };
 
-// getScrappingData();
+getScrappingData();
 
 const basicParseID = (noParsedId: string) => {
   return "#" + noParsedId.replace(":", "\\3A ");
@@ -1523,12 +1603,13 @@ const computeClavienDindo = (
     IIIb: 4550,
     IVa: 7200,
     IVb: 8550,
+    V: 40000,
   };
 
-  const weightedValueArrRes = ClavienDindoCountArr.reduce(
-    (prev, current) => prev + current.count * WEIGHTS[current.name],
-    0
-  );
+  const weightedValueArrRes = ClavienDindoCountArr.reduce((prev, current) => {
+    if (current.name === "V" && current.count !== 0) return 40000;
+    return prev + current.count * WEIGHTS[current.name];
+  }, 0);
 
   return Math.sqrt(weightedValueArrRes) / 2;
 };
@@ -1543,8 +1624,8 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
   // Integrate existing Python library: https://github.com/cdslaborg/paramonte
   // with BOA: https://medium.com/imgcook/boa-use-python-functions-in-node-js-8946d413fbe3
 
-  const errorMargin =
-    maxClavien === "I" ? 0.5 : maxClavien === "II" ? 0.3 : 0.05;
+  const errorMargin = 0.05;
+  // maxClavien === "I" ? 0.5 : maxClavien === "II" ? 0.3 : 0.05;
 
   let ClavienGradesCount: ClavienDindoCountArrType = [
     // will be only one
@@ -1595,7 +1676,7 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
     const _testValue = _testMatrix.find((item) => item.name === lastGrade);
     ++_testValue.count;
 
-    console.log("_testMatrix: ", _testMatrix);
+    // console.log("_testMatrix: ", _testMatrix);
 
     const testValue = computeClavienDindo(_testMatrix);
 
@@ -1603,12 +1684,17 @@ const estimateCCIInBaseMaxClavienAndTargetCCI = async (
       (item) => item.name === lastGrade
     );
 
-    if (testValue < targetCCI) {
+    console.log("testMatrix: ", _testMatrix);
+
+    console.log("testvalue: ", testValue);
+    console.log("targetCCI: ", targetCCI);
+
+    if (testValue < targetCCI + 1) {
       // add value and keep lastGrade
 
       ++foundValue.count;
     } else {
-      console.log("testValue > targetCCI");
+      // console.log("testValue > targetCCI");
 
       //doesn't add value and decrease lastGrade
       // will check if already is in target area
@@ -1639,52 +1725,6 @@ const computeIsBrisbane = (TECNICA: string, TecnicaQuir_descripció: string) => 
   }
   // if()
 };
-
-type TecnicaType =
-  | "Hepatectomia dreta"
-  | "Hepatectomia esquerra"
-  | "Segmentectomia o Bisegmentectomia"
-  | "Resecció/ns limitada/es"
-  | "Bisegmentectomia 2-3"
-  | "Hepatectomia dreta + caudat"
-  | "Hepatectomia esquerra + caudat"
-  | "Triseccionectomia dreta"
-  | "Triseccionectomia esquerra"
-  | "Hepatectomia medial"
-  | "Hepatectomia major + resecció contralateral"
-  | "Radiofreqüència sense resecció"
-  | "Hepatectomia menor + resecció contralateral"
-  | "Resecció caudat";
-
-const computeBrisbaneLocations = (
-  TECNICA: TecnicaType,
-  TecnicaQuir_descripció: string
-) => {
-  const brisbaneLocationsInIco = {
-    hepatectomiaDreta:
-      TECNICA === "Hepatectomia dreta" ||
-      TECNICA === "Hepatectomia dreta + caudat",
-    hepatectomiaEsquerra:
-      TECNICA === "Hepatectomia esquerra" ||
-      TECNICA === "Hepatectomia esquerra + caudat",
-    hepatectomiaAmpliadaDreta: TECNICA === "",
-    hepatectomiaAmpliadaEsquerra: false,
-    SeccionectomiaAnteriorDreta: false,
-    SeccionectomiaPosteriorDreta: false,
-    Bisegmentectomia2i3: TECNICA === "Bisegmentectomia 2-3",
-    Bisegmentectomia6i7: TECNICA === "",
-    Bisegmentectomia5i8: false,
-    BisegmentectomiaAltra: false,
-    Segmentectomia1a8: TECNICA === "Resecció caudat" || TECNICA === "",
-  };
-
-  // if hepa + caudat => add segmentectomia1a8
-
-  // if(TECNICA)
-};
-
-// (async () =>
-//   console.log(await estimateCCIInBaseMaxClavienAndTargetCCI("IIIb", 61)))();
 
 type TNMTypes = "cTNM" | "pTNM" | "ypTNM";
 
@@ -1794,7 +1834,7 @@ export const computeStageFromTNM = ({
 //   })
 // );
 
-// estimateCCIInBaseMaxClavienAndTargetCCI("gradeIIIa", 70);
+// estimateCCIInBaseMaxClavienAndTargetCCI("V", 100);
 
 // const ShowEditFunctionalities = async (frame: puppeteer.Frame) => {
 //   const elements = await frame.$$('input[type="text"]');
