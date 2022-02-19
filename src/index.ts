@@ -63,6 +63,33 @@ const excelQARegister = {
   newValues: ["", "", "New Values"],
 };
 
+const PuppeteerSelect = async (
+  frame: puppeteer.Frame,
+  elementId: string,
+  value: string
+) => {
+  try {
+    // register logic
+    const valueName = getKeyFromEntryId(HTML_IDS_LIVER, elementId);
+    const oldValue = (await await frame.$eval(elementId, (el: any, frame) => {
+      return el.value;
+    })) as string;
+    const newValue = value;
+    console.log("VALUE NAME: ", valueName);
+
+    excelQARegister.headers.push(valueName);
+    excelQARegister.oldValues.push(oldValue);
+    excelQARegister.newValues.push(newValue);
+
+    console.log("excelQARegister: ", excelQARegister);
+
+    await frame.select(elementId, value);
+  } catch (e) {
+    console.error("SOMETHING WENT WRONG WITH PUPPETEER SELECT: ");
+    console.error(e);
+  }
+};
+
 const PuppeteerDeleteAndType = async (
   frame: puppeteer.Frame,
   elementId: string,
@@ -99,7 +126,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/f6c37e15-a3d3-4686-83b0-9f853fde6816",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/eb74673a-f0dd-4b38-a44b-85e36e59c86d",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -301,7 +328,7 @@ const getScrappingData = async () => {
       NHCArray.some((item) => item === currentNHC);
 
     // test only one
-    // if (currentNHC != 10207678) continue;
+    if (currentNHC != 11396316) continue;
 
     // omit multiple
     if (
@@ -431,8 +458,8 @@ const getScrappingData = async () => {
         );
         // TODO: https://stackoverflow.com/questions/3072718/restart-function-that-is-running
         // Also might reload to go to Search and abstract search function to reuse here
-        await goBackFromForm(frame);
-        await goBackFromList(frame);
+        // await goBackFromForm(frame);
+        // await goBackFromList(frame);
       }
     } catch (e) {
       console.error("UNABLE TO EXECUTE NHC COMPARISON");
@@ -580,9 +607,9 @@ const getScrappingData = async () => {
     try {
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.select(ASA.ID, ASA.VALUES[ValueASA]),
-        frame.select(ECOG.ID, ECOG.VALUES[ValueEcog]),
-        frame.select(ERAS.ID, ERAS.VALUES[ValueEras]),
+        PuppeteerSelect(frame, ASA.ID, ASA.VALUES[ValueASA]),
+        PuppeteerSelect(frame, ECOG.ID, ECOG.VALUES[ValueEcog]),
+        PuppeteerSelect(frame, ERAS.ID, ERAS.VALUES[ValueEras]),
         // frame.waitForNavigation({ waitUntil: "networkidle2" }),
       ]);
     } catch (e) {
@@ -648,12 +675,14 @@ const getScrappingData = async () => {
     try {
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.select(
+        PuppeteerSelect(
+          frame,
           HTML_IDS_LIVER.CMD_ABANS.ID,
           HTML_IDS_LIVER.CMD_ABANS.VALUES[ValueCMDAbans]
         ),
 
-        frame.select(
+        PuppeteerSelect(
+          frame,
           HTML_IDS_LIVER.CMD_DESPRES.ID,
           HTML_IDS_LIVER.CMD_DESPRES.VALUES[ValueCMDAfter]
         ),
@@ -690,7 +719,8 @@ const getScrappingData = async () => {
 
           ValueCMDAbansData
         );
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           HTML_IDS_LIVER.INFORME_CMD_ABANS.ID,
           HTML_IDS_LIVER.INFORME_CMD_ABANS.VALUES[ValueCMDInforme]
         );
@@ -753,12 +783,14 @@ const getScrappingData = async () => {
 
     try {
       await Promise.all([
-        frame.select(
+        PuppeteerSelect(
+          frame,
           HTML_IDS_LIVER.IND_CIRU_HEP.ID,
           HTML_IDS_LIVER.IND_CIRU_HEP.VALUES[ValueIndicacioCirugiaHep]
         ),
 
-        frame.select(
+        PuppeteerSelect(
+          frame,
           HTML_IDS_LIVER.TRACTAMENT_H.ID,
           HTML_IDS_LIVER.TRACTAMENT_H.VALUES[ValueTractamentHepátic]
         ),
@@ -770,7 +802,8 @@ const getScrappingData = async () => {
         ValueTractamentHepátic === "LOCOREGIONAL_AND_QUIRURGIC" ||
         ValueTractamentHepátic === "LOCOREGIONAL_ONLY"
       ) {
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.LOCOREGIONAL.ID),
           HTML_IDS_LIVER.LOCOREGIONAL.VALUES[
             ValueRadio ? "RF" : ValueMW ? "mw" : "NOCONSTA"
@@ -826,12 +859,14 @@ const getScrappingData = async () => {
 
       await Promise.all([
         // CHECK VALUES OF ASA WITH EXISTING FORM
-        frame.select(
+        PuppeteerSelect(
+          frame,
           ACCESS_IQ.ID,
           HTML_IDS_LIVER.ACCESS_IQ.VALUES[ValueViaAccess]
         ),
 
-        frame.select(
+        PuppeteerSelect(
+          frame,
           RADICALITAT_IQ.ID,
           HTML_IDS_LIVER.RADICALITAT_IQ.VALUES[ValueRadicalitatIQCirugia]
         ),
@@ -844,7 +879,8 @@ const getScrappingData = async () => {
     }
 
     try {
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         CONVERSIO.ID,
         HTML_IDS_LIVER.CONVERSIO.VALUES[Conversio ? "SI" : "NO"]
       );
@@ -857,7 +893,8 @@ const getScrappingData = async () => {
       if (Conversio) {
         // await frame.waitForSelector(CONVERSIO_PLANEJADA.ID);
 
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           CONVERSIO_PLANEJADA.ID,
           HTML_IDS_LIVER.CONVERSIO.VALUES[LapConversioPlanejada ? "SI" : "NO"]
         );
@@ -875,7 +912,8 @@ const getScrappingData = async () => {
     ).toString();
 
     try {
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         HTML_IDS_LIVER.TUMOR_ORIGEN_MH.ID,
         HTML_IDS_LIVER.TUMOR_ORIGEN_MH.VALUES["CCR"]
       );
@@ -911,7 +949,8 @@ const getScrappingData = async () => {
       "0" + numReseccPrev
     );
     try {
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
         HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
           affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
@@ -952,35 +991,43 @@ const getScrappingData = async () => {
       : "NO";
 
     try {
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_I.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_I.VALUES[valLocI]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_II.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_II.VALUES[valLocII]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_III.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_III.VALUES[valLocIII]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_IV.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_IV.VALUES[valLocIV]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_V.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_V.VALUES[valLocV]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VI.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VI.VALUES[valLocVI]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VII.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VII.VALUES[valLocVII]
       );
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VIII.ID),
         HTML_IDS_LIVER.LOC_TUMOR_AL_DX.LOC_SEG_VIII.VALUES[valLocVIII]
       );
@@ -1052,21 +1099,24 @@ const getScrappingData = async () => {
 
     try {
       await Promise.all([
-        frame.select(
+        PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.ID),
           HTML_IDS_LIVER.IQ_SIMULT_TUMOR_PRIMARI.VALUES[
             NoSiParse(iQSimuTumorPrimary)
           ]
         ),
-        frame.select(
+        PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.TIPUS_RESECCIO_MH.ID),
           HTML_IDS_LIVER.TIPUS_RESECCIO_MH.VALUES[tipusReseccioMH]
         ),
-        frame.select(
+        PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.TIPUS_BRISBANE.ID),
           HTML_IDS_LIVER.TIPUS_BRISBANE.VALUES[isReglada]
         ),
-        // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
+        // PuppeteerSelect(frame, MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
         //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
         //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
         //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
@@ -1096,7 +1146,8 @@ const getScrappingData = async () => {
             //   HTML_IDS_LIVER.LOC_BRISBANE[key].VALUES["true"]
             // );
 
-            await frame.select(
+            await PuppeteerSelect(
+              frame,
               basicParseID(HTML_IDS_LIVER.LOC_BRISBANE[key].ID),
               HTML_IDS_LIVER.LOC_BRISBANE[key].VALUES[value]
             );
@@ -1114,7 +1165,8 @@ const getScrappingData = async () => {
         const valueEmbPortal = currentObservation[HEADERS_LIVER_DDBB.EPPO];
         const valueRadioEmb = "NO";
         await Promise.all([
-          frame.select(
+          PuppeteerSelect(
+            frame,
             basicParseID(HTML_IDS_LIVER.ALPSS.ID),
             HTML_IDS_LIVER.ALPSS.VALUES[
               valueALPSS === "Si"
@@ -1124,7 +1176,8 @@ const getScrappingData = async () => {
                 : "NOCONSTA"
             ]
           ),
-          frame.select(
+          PuppeteerSelect(
+            frame,
             basicParseID(HTML_IDS_LIVER.EMBOLITZACIO_PORTAL_PREOP_MH.ID),
             HTML_IDS_LIVER.EMBOLITZACIO_PORTAL_PREOP_MH.VALUES[
               valueEmbPortal === "Si"
@@ -1134,12 +1187,13 @@ const getScrappingData = async () => {
                 : "NOCONSTA"
             ]
           ),
-          frame.select(
+          PuppeteerSelect(
+            frame,
             basicParseID(HTML_IDS_LIVER.RADIOEMBOLITZACIO_MH.ID),
             HTML_IDS_LIVER.RADIOEMBOLITZACIO_MH.VALUES[valueRadioEmb]
           ),
 
-          // frame.select( MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
+          // PuppeteerSelect(frame, MODIFICAR PER BRISBANE, s'haurà d'afegir loc.
           //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.ID,
           //   HTML_IDS_LIVER.AFECTACIO_BILOBULAR_MH.VALUES[
           //     affBilob === "Si" ? "SI" : affBilob === "No" ? "NO" : "NOCONSTA"
@@ -1161,7 +1215,8 @@ const getScrappingData = async () => {
 
     try {
       await Promise.all([
-        frame.select(
+        PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.COMPL_POST_IQ_90_DIES.ID),
           HTML_IDS_LIVER.COMPL_POST_IQ_90_DIES.VALUES[
             valueComplPostIQ ? "SI" : "NO"
@@ -1266,7 +1321,8 @@ const getScrappingData = async () => {
         const valueHemoper = currentObservation[HEADERS_LIVER_DDBB.HEMOPER];
         const valueAscitis = currentObservation[HEADERS_LIVER_DDBB.ASCITIS];
 
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.ID),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.INSF_HEPATICA.VALUES[
             NoSiParse(AsumeNoIfUnknown(valueInsufHepatica))
@@ -1274,20 +1330,23 @@ const getScrappingData = async () => {
         );
 
         if (valueInsufHepatica === "SI" && valueInsufHepatica)
-          await frame.select(
+          await PuppeteerSelect(
+            frame,
             basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.ID),
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_INSF_HEP.VALUES[
               valueInsufHepaticaGrau
             ]
           );
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.ID),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.FISTULA_BILIAR.VALUES[
             NoSiParse(AsumeNoIfUnknown(valueFistulaBil))
           ]
         );
         if (valueFistulaBilGrau && valueFistulaBilDebitDiari) {
-          await frame.select(
+          await PuppeteerSelect(
+            frame,
             basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.GRAU_FIST_BIL.ID),
 
             valueFistulaBilGrau.toString()
@@ -1301,14 +1360,16 @@ const getScrappingData = async () => {
             valueFistulaBilDebitDiari
           );
         }
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE.ID
           ),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.COLECCIO_INTRAABOMINAL_DRENATGE
             .VALUES[NoSiParse(AsumeNoIfUnknown(valueCalDrenatge))]
         );
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(
             HTML_IDS_LIVER.COMPL_ESPECIFIQUES
               .HEMOPERITONEU_POST_IQ_REINTERVENCIO.ID
@@ -1317,7 +1378,8 @@ const getScrappingData = async () => {
             .VALUES[NoSiParse(AsumeNoIfUnknown(valueHemoper))]
         );
 
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.ID),
           HTML_IDS_LIVER.COMPL_ESPECIFIQUES.ASCITIS.VALUES[
             NoSiParse(AsumeNoIfUnknown(valueAscitis))
@@ -1344,7 +1406,8 @@ const getScrappingData = async () => {
 
         const valueMorbilitat = "SI";
 
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(
             HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.ESTADA_UCI_REA.ID
           ),
@@ -1363,7 +1426,8 @@ const getScrappingData = async () => {
             valueTempsUCIREA
           );
 
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.REINT_90_DIES.ID),
           HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.REINT_90_DIES.VALUES[
             NoSiParse(valueREIQ)
@@ -1378,7 +1442,8 @@ const getScrappingData = async () => {
 
             valueDataREIQ
           );
-          await frame.select(
+          await PuppeteerSelect(
+            frame,
             basicParseID(
               HTML_IDS_LIVER.COMPL_UCI_REINT_POST_IQ.MOTIU_REINT_90_DIES.ID
             ),
@@ -1388,7 +1453,8 @@ const getScrappingData = async () => {
           );
         }
 
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.ID),
           HTML_IDS_LIVER.COMPL_MORBI_MORTALITAT.VALUES[valueMorbilitat]
         );
@@ -1426,7 +1492,8 @@ const getScrappingData = async () => {
         (parseFloat(currentObservation[HEADERS_LIVER_DDBB.MIDAAP]) || 0) * 10
       ).toString();
 
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.AP.AFFECT_MARGE_RESSECCIO.ID),
         HTML_IDS_LIVER.AP.AFFECT_MARGE_RESSECCIO.VALUES[
           NoSiParse(valueAffMargeResAP)
@@ -1510,7 +1577,8 @@ const getScrappingData = async () => {
         valueDarrerControl
       );
 
-      await frame.select(
+      await PuppeteerSelect(
+        frame,
         basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.ID),
         HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.ESTAT_PACIENT.VALUES[valueEstat]
       );
@@ -1524,7 +1592,8 @@ const getScrappingData = async () => {
         );
 
       if (valueEstat === "EXITUS" && valueCausaExitus)
-        await frame.select(
+        await PuppeteerSelect(
+          frame,
           basicParseID(HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.ID),
           HTML_IDS_LIVER.ESTAT_FINAL_PACIENT.CAUSA_EXITUS.VALUES[
             valueCausaExitus
@@ -1543,8 +1612,8 @@ const getScrappingData = async () => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
-    break;
     await saveForm(frame);
+    break;
     await goBackFromList(frame);
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
