@@ -37,7 +37,14 @@ import { getDiffBetweenTwoDates, getJsFormatFromOddDate } from "./crossExcels";
 
 const __filename = fileURLToPath(import.meta.url);
 
-const checkValues = true;
+let checkValues = false;
+
+process.argv.forEach(function (val, index, array) {
+  if (val.includes("checkSum=true")) checkValues = true;
+  console.log(index + ": " + val);
+});
+
+console.log("checkValues; ", checkValues);
 
 type SubmitStates = "LOADED" | "FAILED" | "DISCONNECTED";
 
