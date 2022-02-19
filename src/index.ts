@@ -37,14 +37,7 @@ import { getDiffBetweenTwoDates, getJsFormatFromOddDate } from "./crossExcels";
 
 const __filename = fileURLToPath(import.meta.url);
 
-const getHeadersObj = (headers) => {
-  const returnObj = {};
-
-  headers.forEach((header) => {
-    // Object.assign(returnObj, )
-  });
-  return;
-};
+const checkValues = true;
 
 type SubmitStates = "LOADED" | "FAILED" | "DISCONNECTED";
 
@@ -61,6 +54,7 @@ const excelQARegister = {
   headers: ["NHC", "Timestamp", "Type"],
   oldValues: ["", "", "Old Values"],
   newValues: ["", "", "New Values"],
+  checkValues: ["", "", "Check"],
 };
 
 const PuppeteerSelect = async (
@@ -75,15 +69,15 @@ const PuppeteerSelect = async (
       return el.value;
     })) as string;
     const newValue = value;
-    console.log("VALUE NAME: ", valueName);
 
     excelQARegister.headers.push(valueName);
     excelQARegister.oldValues.push(oldValue);
     excelQARegister.newValues.push(newValue);
+    excelQARegister.checkValues.push(newValue == oldValue ? "1" : "0");
 
-    console.log("excelQARegister: ", excelQARegister);
-
-    await frame.select(elementId, value);
+    if (!checkValues) {
+      await frame.select(elementId, value);
+    }
   } catch (e) {
     console.error("SOMETHING WENT WRONG WITH PUPPETEER SELECT: ");
     console.error(e);
@@ -109,10 +103,12 @@ const PuppeteerDeleteAndType = async (
     excelQARegister.headers.push(valueName);
     excelQARegister.oldValues.push(oldValue);
     excelQARegister.newValues.push(newValue);
+    excelQARegister.checkValues.push(newValue == oldValue ? "1" : "0");
+    if (!checkValues) {
+      await frame.$eval(elementId, (el: any, value) => (el.value = value), "");
 
-    await frame.$eval(elementId, (el: any, value) => (el.value = value), "");
-
-    await frame.type(elementId, value);
+      await frame.type(elementId, value);
+    }
   } catch (e) {
     console.error("SOMETHING WENT WRONG WITH PUPPETEER DELETE AND TYPE: ");
     console.error(e);
@@ -475,16 +471,11 @@ const getScrappingData = async () => {
       const isTancat = _isTancat !== "EDITModificableNoObligatori";
 
       const IsFormClosed_ID = HTML_IDS_LIVER.TANCAMENT_REGISTRE_DADES;
-      await frame.$eval(
-        IsFormClosed_ID,
-        (el: any, value) => {
-          if (value) {
-            el.click();
-          }
-        },
-        isTancat
-      );
-
+      if (isTancat || checkValues) {
+        await frame.$eval(IsFormClosed_ID, (el: any) => {
+          el.click();
+        });
+      }
       // await frame.waitForNavigation({ waitUntil: "networkidle2" });
     } catch (e) {
       console.error("Tancament registre func error");
@@ -946,7 +937,7 @@ const getScrappingData = async () => {
     await PuppeteerDeleteAndType(
       frame,
       HTML_IDS_LIVER.NUM_RESECCIONS_H_PREV,
-      "0" + numReseccPrev
+      numReseccPrev
     );
     try {
       await PuppeteerSelect(
@@ -1500,7 +1491,7 @@ const getScrappingData = async () => {
         ]
       );
 
-      if (valueAffMargeResAP && valueDistMargeResAP)
+      if (valueAffMargeResAP == "1" && valueDistMargeResAP)
         await PuppeteerDeleteAndType(
           frame,
           basicParseID(HTML_IDS_LIVER.AP.DIST_MARGE_RESSECCIO),
@@ -1699,16 +1690,33 @@ const addToQARegister = async (
   });
   // Object.assign(secondRow, { [currentObsRegister.headers[1]]: timestamp });
 
+  let checkSum = 0;
+  const totalToCheck = currentObsRegister.headers.length - 3;
   const thirdRow = {};
   currentObsRegister.headers.forEach((item, index) => {
-    Object.assign(thirdRow, { [item]: "-" });
+    const currentValue = currentObsRegister.checkValues[index];
+    if (currentValue == "1") ++checkSum;
+    Object.assign(thirdRow, { [item]: currentValue });
+  });
+  Object.assign(thirdRow, { [currentObsRegister.headers[0]]: "Check sum" });
+
+  Object.assign(thirdRow, {
+    [currentObsRegister.headers[1]]: `${checkSum}/${totalToCheck} = ${(
+      (checkSum / totalToCheck) *
+      100
+    ).toFixed(2)}`,
+  });
+
+  const fourthRow = {};
+  currentObsRegister.headers.forEach((item, index) => {
+    Object.assign(fourthRow, { [item]: "-" });
   });
 
   const xlsxSheet = [...ddbbData];
 
   buildXlsxFile2(
     "QARegister",
-    [...ddbbData, firstRow, secondRow, thirdRow],
+    [...ddbbData, firstRow, secondRow, thirdRow, fourthRow],
     "register"
   );
   console.log("added to QA register");
