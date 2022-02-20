@@ -1,0 +1,38 @@
+Script started on Sun Feb 20 20:57:32 2022
+Restored session: Sun Feb 20 20:57:17 CET 2022
+[1m[7m%[27m[1m[0m                                                                                ]7;file://MacBook-Pro-de-Manel.local/Users/manelcastrofonseca/Desktop/Other%20things/Estudio/puppeteer[0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hexit /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-first-run --no-default-browser-check --user-data-dir=$(mktemp -d -t 'chrome-remote_data_dir')[K
+[K[K[?2004l
+
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/caa8148c-21a4-4bf0-99a8-1707ace72c58
+^[[A^[[A^[[B[23241:36611:0220/205738.137014:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)] START: ReportBluetoothAvailability(). If you don't see the END: message, this is crbug.com/1216328.
+[23241:36611:0220/205738.137303:ERROR:chrome_browser_main_extra_parts_metrics.cc(230)] END: ReportBluetoothAvailability()
+[23241:36611:0220/205738.137317:ERROR:chrome_browser_main_extra_parts_metrics.cc(235)] START: GetDefaultBrowser(). If you don't see the END: message, this is crbug.com/1216328.
+[23241:36611:0220/205738.138424:ERROR:chrome_browser_main_extra_parts_metrics.cc(239)] END: GetDefaultBrowser()
+^R
+^[[A^[[A^[[exit
+exit
+^C[1m[7m%[27m[1m[0m                                                                                ]7;file://MacBook-Pro-de-Manel.local/Users/manelcastrofonseca/Desktop/Other%20things/Estudio/puppeteer[0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-first-run --no-default-browser-check --user-data-dir=$(mktemp -d -t 'chrome-remote_data_dir')[K
+[K[K[A[3C[?2004l[1B
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/07914eba-0231-41e8-bdf1-3e76b05bf65c
+[23386:34307:0220/210212.808987:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)] START: ReportBluetoothAvailability(). If you don't see the END: message, this is crbug.com/1216328.
+[23386:34307:0220/210212.809210:ERROR:chrome_browser_main_extra_parts_metrics.cc(230)] END: ReportBluetoothAvailability()
+[23386:34307:0220/210212.809223:ERROR:chrome_browser_main_extra_parts_metrics.cc(235)] START: GetDefaultBrowser(). If you don't see the END: message, this is crbug.com/1216328.
+[23386:34307:0220/210212.809663:ERROR:chrome_browser_main_extra_parts_metrics.cc(239)] END: GetDefaultBrowser()
+[23386:34307:0220/210220.480981:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[23386:34307:0220/210220.481337:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[23386:34307:0220/210220.481569:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[23386:34307:0220/210220.481717:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[23386:34307:0220/210220.481853:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[23386:36355:0220/210220.482160:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+2022-02-20 21:02:43.334 Google Chrome Helper (Renderer)[23564:2946684] CoreText note: Client requested name ".PingFangSC-Regular", it will get Times-Roman rather than the intended font. All system UI font access should be through proper APIs such as CTFontCreateUIFontForLanguage() or +[NSFont systemFontOfSize:].
+2022-02-20 21:02:43.334 Google Chrome Helper (Renderer)[23564:2946684] CoreText note: Set a breakpoint on CTFontLogSystemFontNameRequest to debug.
+2022-02-20 21:02:43.336 Google Chrome Helper (Renderer)[23564:2946684] CoreText note: Client requested name ".PingFangSC-Regular", it will get Times-Roman rather than the intended font. All system UI font access should be through proper APIs such as CTFontCreateUIFontForLanguage() or +[NSFont systemFontOfSize:].
+2022-02-20 21:02:43.336 Google Chrome Helper (Renderer)[23564:2946684] CoreText note: Client requested name ".PingFangSC-Regular", it will get Times-Roman rather than the intended font. All system UI font access should be through proper APIs such as CTFontCreateUIFontForLanguage() or +[NSFont systemFontOfSize:].
+2022-02-20 21:04:53.131 Google Chrome Helper (Renderer)[23590:2947032] CoreText note: Client requested name ".PingFangSC-Regular", it will get Times-Roman rather than the intended font. All system UI font access should be through proper APIs such as CTFontCreateUIFontForLanguage() or +[NSFont systemFontOfSize:].
+2022-02-20 21:04:53.131 Google Chrome Helper (Renderer)[23590:2947032] CoreText note: Set a breakpoint on CTFontLogSystemFontNameRequest to debug.
+2022-02-20 21:04:53.132 Google Chrome Helper (Renderer)[23590:2947032] CoreText note: Client requested name ".PingFangSC-Regular", it will get Times-Roman rather than the intended font. All system UI font access should be through proper APIs such as CTFontCreateUIFontForLanguage() or +[NSFont systemFontOfSize:].
+2022-02-20 21:04:53.132 Google Chrome Helper (Renderer)[23590:2947032] CoreText note: Client requested name ".PingFangSC-Regular", it will get Times-Roman rather than the intended font. All system UI font access should be through proper APIs such as CTFontCreateUIFontForLanguage() or +[NSFont systemFontOfSize:].
+^C[1m[7m%[27m[1m[0m                                                                                ]7;file://MacBook-Pro-de-Manel.local/Users/manelcastrofonseca/Desktop/Other%20things/Estudio/puppeteer[0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hs 
+bck-i-search: _[K[A[37C /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 --no-first-run
+--no-default-browser-check --u[4ms[24mer-data-dir=$(mktemp -d -t 'chrome-remote_data_dir')[K
+bck-i-search: s_[K[A[A[14C[A[A[22Cyarn remove expo-splash-[4ms[4mc[24mreen[K[1Bbck-i-search: sc_[K[1B[K[1B[K[4A[76C[1C[4mc[4mr[24m[2B[63Dr_[A[A[58C[24D/Users/manelcastrofonsec[24ma[24m/[24mgoil-backoffice-mobile/node_modules/react-native/[4mscri[24mpts/launchPackager.command ; exit;             [1Bbck-i-search: scri_[K[A[A[28C[3C[4mi[4mp[24m[2B[34Dp_[A[A[27C[4C[4mp[4mt[24m[2B[34Dt_[A[A[26C

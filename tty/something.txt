@@ -1,0 +1,18 @@
+Script started on Sun Feb 20 21:20:15 2022
+[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h[7m /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=9222 -[7m-[7mno-first-run --no-default-browser-check --user-data-dir=$(mktemp -d -t 'chrome-remote_data_dir')[27m[K
+[K[A[A[52C[27m [27m/[27mA[27mp[27mp[27ml[27mi[27mc[27ma[27mt[27mi[27mo[27mn[27ms[27m/[27mG[27mo[27mo[27mg[27ml[27me[27m\[27m [27mC[27mh[27mr[27mo[27mm[27me[27m.[27ma[27mp[27mp[27m/[27mC[27mo[27mn[27mt[27me[27mn[27mt[27ms[27m/[27mM[27ma[27mc[27mO[27mS[27m/[27mG[27mo[27mo[27mg[27ml[27me[27m\[27m [27mC[27mh[27mr[27mo[27mm[27me[27m [27m-[27m-[27mr[27me[27mm[27mo[27mt[27me[27m-[27md[27me[27mb[27mu[27mg[27mg[27mi[27mn[27mg[27m-[27mp[27mo[27mr[27mt[27m=[27m9[27m2[27m2[27m2[27m [27m--[27mn[27mo[27m-[27mf[27mi[27mr[27ms[27mt[27m-[27mr[27mu[27mn[27m [27m-[27m-[27mn[27mo[27m-[27md[27me[27mf[27ma[27mu[27ml[27mt[27m-[27mb[27mr[27mo[27mw[27ms[27me[27mr[27m-[27mc[27mh[27me[27mc[27mk[27m [27m-[27m-[27mu[27ms[27me[27mr[27m-[27md[27ma[27mt[27ma[27m-[27md[27mi[27mr[27m=[27m$[27m([27mm[27mk[27mt[27me[27mm[27mp[27m [27m-[27md[27m [27m-[27mt[27m [27m'[27mc[27mh[27mr[27mo[27mm[27me[27m-[27mr[27me[27mm[27mo[27mt[27me[27m_[27md[27ma[27mt[27ma[27m_[27md[27mi[27mr[27m'[27m)[1B[K[?2004l
+
+DevTools listening on ws://127.0.0.1:9222/devtools/browser/73f1610d-3be3-4432-a48d-bb8c6666fe46
+[24535:38659:0220/212030.431987:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)] START: ReportBluetoothAvailability(). If you don't see the END: message, this is crbug.com/1216328.
+[24535:38659:0220/212030.432620:ERROR:chrome_browser_main_extra_parts_metrics.cc(230)] END: ReportBluetoothAvailability()
+[24535:38659:0220/212030.432642:ERROR:chrome_browser_main_extra_parts_metrics.cc(235)] START: GetDefaultBrowser(). If you don't see the END: message, this is crbug.com/1216328.
+[24535:38659:0220/212030.433791:ERROR:chrome_browser_main_extra_parts_metrics.cc(239)] END: GetDefaultBrowser()
+[24535:38659:0220/212038.171093:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[24535:36611:0220/212038.171597:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[24535:38659:0220/212038.172187:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[24535:36611:0220/212038.172675:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[24535:38659:0220/212038.173712:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+[24535:36611:0220/212038.174451:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
+^C[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004heeie exit[?2004l
+
+Script done on Sun Feb 20 21:21:02 2022

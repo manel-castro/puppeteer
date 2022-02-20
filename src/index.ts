@@ -1625,6 +1625,8 @@ const getScrappingData = async () => {
   }
 };
 
+// get chromium ws data
+
 getScrappingData();
 
 // console.log(
