@@ -1,9 +1,0 @@
-Script started on Sun Feb 20 20:54:25 2022
-Restored session: Sun Feb 20 20:54:19 CET 2022
-[1m[7m%[27m[1m[0m                                                                                ]7;file://MacBook-Pro-de-Manel.local/Users/manelcastrofonseca/Desktop/Other%20things/Estudio/puppeteer[0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004heexit[?2004l
-
-Saving session...
-...saving history...truncating history files...
-...completed.
-
-Script done on Sun Feb 20 20:54:28 2022

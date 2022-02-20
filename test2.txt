@@ -1,17 +1,0 @@
-Script started on Sun Feb 20 22:15:29 2022
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h../test.sh[?2004l
-teste
-something
-[26802:63235:0220/221608.543357:ERROR:socket_posix.cc(150)] bind() failed: Address already in use (48)
-
-DevTools listening on ws://[::1]:9222/devtools/browser/ef6a6b26-59fc-449e-b8bd-b193420816e1
-[26802:29443:0220/221611.236777:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)] START: ReportBluetoothAvailability(). If you don't see the END: message, this is crbug.com/1216328.
-[26802:29443:0220/221611.237296:ERROR:chrome_browser_main_extra_parts_metrics.cc(230)] END: ReportBluetoothAvailability()
-[26802:29443:0220/221611.237475:ERROR:chrome_browser_main_extra_parts_metrics.cc(235)] START: GetDefaultBrowser(). If you don't see the END: message, this is crbug.com/1216328.
-[26802:29443:0220/221611.238826:ERROR:chrome_browser_main_extra_parts_metrics.cc(239)] END: GetDefaultBrowser()
-[26802:29443:0220/221618.982147:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.983049:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:29443:0220/221618.983359:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.983637:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:29443:0220/221618.983963:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.984215:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.

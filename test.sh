@@ -8,7 +8,7 @@ trap cleanup EXIT
 
 if [ -z "$SCRIPT" ]
 then 
-    /usr/bin/script ./test2.txt /bin/bash -c "$0 $*"
+    /usr/bin/script ./wsregister.txt /bin/bash -c "$0 $*"
     exit 0
 fi
 

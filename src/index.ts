@@ -1627,7 +1627,26 @@ const getScrappingData = async () => {
 
 // get chromium ws data
 
-getScrappingData();
+setTimeout(async () => {
+  const outputChrome = await fs.readFileSync("tty/wsregister.txt", "utf-8");
+
+  const index = outputChrome.indexOf("ws:");
+  // console.log("is: ", outputChrome);
+  console.log("index is: ", index);
+  let wsEndpoint = "";
+
+  for (let i = index; i < index + 200; i++) {
+    if (outputChrome[i] === " " || outputChrome[i] === "\n") break;
+    wsEndpoint += outputChrome[i];
+  }
+
+  console.log("wsEndpoint: ", wsEndpoint);
+
+  console.log("start Scrapping data");
+
+  return;
+  getScrappingData();
+}, 300);
 
 // console.log(
 //   "KEY FOUND",
