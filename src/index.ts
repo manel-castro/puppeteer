@@ -64,6 +64,8 @@ const excelQARegister = {
   checkValues: ["", "", "Check"],
 };
 
+const CatchFunction = (currentObs) => {};
+
 const PuppeteerSelect = async (
   frame: puppeteer.Frame,
   elementId: string,
@@ -129,7 +131,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/eb74673a-f0dd-4b38-a44b-85e36e59c86d",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/0e36c1c9-014f-4ac4-b8ff-ef0dc0dde8d5",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -274,7 +276,7 @@ const goBackFromForm = async (frame: puppeteer.Frame) => {
   ]);
 };
 
-const getScrappingData = async (endpoint: string) => {
+const getScrappingData = async (endpoint?: string) => {
   const ddbbData = await parseXlsx2("output/crossedData3", "crossedData3");
 
   // - check if name and lastnames are equal to ddbb
@@ -312,7 +314,7 @@ const getScrappingData = async (endpoint: string) => {
 
   const initialCount = whereWeLeftIt + 1 || 0;
 
-  for (let i = 10; i < 12; i++) {
+  for (let i = 10; i < ddbbData.length; i++) {
     await registerCurrentObservationNumber(i);
     const errors = [];
     console.log("i");
@@ -321,11 +323,11 @@ const getScrappingData = async (endpoint: string) => {
 
     const currentNHC = currentObservation[HEADERS_LIVER_DDBB.SAP];
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
-    const isSecondObs = currentLastName.includes("2"); // not necessarely double form
+    // const isSecondObs = currentLastName.includes("2"); // not necessarely double form
 
     const doneNHCs = [12816340, 13067884, 13296015, 10207678];
     const detectedErrorNHCs = [10207678, 13005406];
-    const doubleFormInput = [13297134];
+    const doubleFormInput = [13297134]; // check
 
     const continueIfExistAny = (NHCArray: number[]) =>
       NHCArray.some((item) => item === currentNHC);
@@ -354,6 +356,11 @@ const getScrappingData = async (endpoint: string) => {
       console.log("ommiting, is second observation");
 
       await addToUncompletedList(currentObservation, "Is Second Observation");
+      continue;
+    }
+
+    const TacOrRm = currentObservation[HEADERS_LIVER_DDBB.FECHATACRM] as string;
+    if (!TacOrRm || TacOrRm.length < 4) {
       continue;
     }
 
@@ -531,6 +538,7 @@ const getScrappingData = async (endpoint: string) => {
     );
 
     const isDataDiagnosticUnrealistic =
+      true ||
       !diffDateIqAndDiagnosticInMilliseconds ||
       diffDateIqAndDiagnosticInMilliseconds > halfYearInMilliseconds;
 
@@ -1605,13 +1613,13 @@ const getScrappingData = async (endpoint: string) => {
     console.log("NHC: ", currentNHC);
 
     await addToCompletedList(currentObservation);
+    doneNHCs.push(currentNHC);
     await addToQARegister(excelQARegister, currentNHC);
     console.log(currentNHC, " added to completed register");
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
     await saveForm(frame);
-    break;
     await goBackFromList(frame);
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
@@ -1629,6 +1637,7 @@ const getScrappingData = async (endpoint: string) => {
 
 const host = "127.0.0.1";
 setTimeout(async () => {
+  return;
   const outputChrome = await fs.readFileSync("tty/wsregister.txt", "utf-8");
 
   const index = outputChrome.indexOf("ws:");
@@ -1645,10 +1654,11 @@ setTimeout(async () => {
 
   console.log("wsEndpoint: ", wsEndpoint);
 
-  return;
-
   getScrappingData(wsEndpoint);
+  return;
 }, 30000);
+
+getScrappingData();
 
 // console.log(
 //   "KEY FOUND",
