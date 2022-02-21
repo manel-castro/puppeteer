@@ -1,401 +1,0 @@
-Script started on Sun Feb 20 22:15:29 2022
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h../test.sh[?2004l
-teste
-something
-[26802:63235:0220/221608.543357:ERROR:socket_posix.cc(150)] bind() failed: Address already in use (48)
-
-DevTools listening on ws://[::1]:9222/devtools/browser/ef6a6b26-59fc-449e-b8bd-b193420816e1
-[26802:29443:0220/221611.236777:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)] START: ReportBluetoothAvailability(). If you don't see the END: message, this is crbug.com/1216328.
-[26802:29443:0220/221611.237296:ERROR:chrome_browser_main_extra_parts_metrics.cc(230)] END: ReportBluetoothAvailability()
-[26802:29443:0220/221611.237475:ERROR:chrome_browser_main_extra_parts_metrics.cc(235)] START: GetDefaultBrowser(). If you don't see the END: message, this is crbug.com/1216328.
-[26802:29443:0220/221611.238826:ERROR:chrome_browser_main_extra_parts_metrics.cc(239)] END: GetDefaultBrowser()
-[26802:29443:0220/221618.982147:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.983049:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:29443:0220/221618.983359:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.983637:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:29443:0220/221618.983963:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.984215:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-^C[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hggit add .[?2004l
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hggit commit -m ""a"d"d" "s"c"r"i"p"t" "r"e"g"" c"o"r"d"i"n"g"[?2004l
-[master d5f9dc5] add script recording
- 13 files changed, 126 insertions(+), 20 deletions(-)
- create mode 100755 chromium.sh
- create mode 100755 test.sh
- create mode 100644 test2.txt
- delete mode 100644 tty/output.txt
- create mode 100644 tty/something.tsx
- create mode 100644 tty/something.txt
- create mode 100644 tty/user.log
- create mode 100644 tty/wsSession.txt
- create mode 100644 tty/wsSession3.txt
- create mode 100644 typescript
- create mode 100644 user.log
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hggit push origin master[?2004l
-Enumerating objects: 21, done.
-Counting objects:   4% (1/21)Counting objects:   9% (2/21)Counting objects:  14% (3/21)Counting objects:  19% (4/21)Counting objects:  23% (5/21)Counting objects:  28% (6/21)Counting objects:  33% (7/21)Counting objects:  38% (8/21)Counting objects:  42% (9/21)Counting objects:  47% (10/21)Counting objects:  52% (11/21)Counting objects:  57% (12/21)Counting objects:  61% (13/21)Counting objects:  66% (14/21)Counting objects:  71% (15/21)Counting objects:  76% (16/21)Counting objects:  80% (17/21)Counting objects:  85% (18/21)Counting objects:  90% (19/21)Counting objects:  95% (20/21)Counting objects: 100% (21/21)Counting objects: 100% (21/21), done.
-Delta compression using up to 8 threads
-Compressing objects:   7% (1/14)Compressing objects:  14% (2/14)Compressing objects:  21% (3/14)Compressing objects:  28% (4/14)Compressing objects:  35% (5/14)Compressing objects:  42% (6/14)Compressing objects:  50% (7/14)Compressing objects:  57% (8/14)Compressing objects:  64% (9/14)Compressing objects:  71% (10/14)Compressing objects:  78% (11/14)Compressing objects:  85% (12/14)Compressing objects:  92% (13/14)Compressing objects: 100% (14/14)Compressing objects: 100% (14/14), done.
-Writing objects:   6% (1/16)Writing objects:  12% (2/16)Writing objects:  18% (3/16)Writing objects:  25% (4/16)Writing objects:  31% (5/16)Writing objects:  37% (6/16)Writing objects:  43% (7/16)Writing objects:  56% (9/16)Writing objects:  62% (10/16)Writing objects:  68% (11/16)Writing objects:  75% (12/16)Writing objects:  81% (13/16)Writing objects:  87% (14/16)Writing objects:  93% (15/16)Writing objects: 100% (16/16)Writing objects: 100% (16/16), 4.52 KiB | 4.52 MiB/s, done.
-Total 16 (delta 5), reused 0 (delta 0), pack-reused 0
-remote: Resolving deltas:   0% (0/5)[Kremote: Resolving deltas:  20% (1/5)[Kremote: Resolving deltas:  40% (2/5)[Kremote: Resolving deltas:  60% (3/5)[Kremote: Resolving deltas:  80% (4/5)[Kremote: Resolving deltas: 100% (5/5)[Kremote: Resolving deltas: 100% (5/5), completed with 3 local objects.[K
-To github.com-mine:mane936/puppeteer.git
-   108eede..d5f9dc5  master -> master
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hgit push origin master[22D                      [22Dgit push origin master      [16D               [15Dyyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m-1[39m
-start Scrapping data
-[2K[1G✨  Done in 2.31s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-is:  Script started on Sun Feb 20 22:15:29 2022
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h../test.sh[?2004l
-teste
-something
-[26802:63235:0220/221608.543357:ERROR:socket_posix.cc(150)] bind() failed: Address already in use (48)
-
-DevTools listening on ws://[::1]:9222/devtools/browser/ef6a6b26-59fc-449e-b8bd-b193420816e1
-[26802:29443:0220/221611.236777:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)] START: ReportBluetoothAvailability(). If you don't see the END: message, this is crbug.com/1216328.
-[26802:29443:0220/221611.237296:ERROR:chrome_browser_main_extra_parts_metrics.cc(230)] END: ReportBluetoothAvailability()
-[26802:29443:0220/221611.237475:ERROR:chrome_browser_main_extra_parts_metrics.cc(235)] START: GetDefaultBrowser(). If you don't see the END: message, this is crbug.com/1216328.
-[26802:29443:0220/221611.238826:ERROR:chrome_browser_main_extra_parts_metrics.cc(239)] END: GetDefaultBrowser()
-[26802:29443:0220/221618.982147:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.983049:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:29443:0220/221618.983359:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.983637:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:29443:0220/221618.983963:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-[26802:35843:0220/221618.984215:ERROR:web_app_shortcut_mac.mm(1095)] Failed to get application paths.
-^C[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hggit add .[?2004l
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hggit commit -m ""a"d"d" "s"c"r"i"p"t" "r"e"g"" c"o"r"d"i"n"g"[?2004l
-[master d5f9dc5] add script recording
- 13 files changed, 126 insertions(+), 20 deletions(-)
- create mode 100755 chromium.sh
- create mode 100755 test.sh
- create mode 100644 test2.txt
- delete mode 100644 tty/output.txt
- create mode 100644 tty/something.tsx
- create mode 100644 tty/something.txt
- create mode 100644 tty/user.log
- create mode 100644 tty/wsSession.txt
- create mode 100644 tty/wsSession3.txt
- create mode 100644 typescript
- create mode 100644 user.log
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hggit push origin master[?2004l
-Enumerating objects: 21, done.
-Counting objects:   4% (1/21)Counting objects:   9% (2/21)Counting objects:  14% (3/21)Counting objects:  19% (4/21)Counting objects:  23% (5/21)Counting objects:  28% (6/21)Counting objects:  33% (7/21)Counting objects:  38% (8/21)Counting objects:  42% (9/21)Counting objects:  47% (10/21)Counting objects:  52% (11/21)Counting objects:  57% (12/21)Counting objects:  61% (13/21)Counting objects:  66% (14/21)Counting objects:  71% (15/21)Counting objects:  76% (16/21)Counting objects:  80% (17/21)Counting objects:  85% (18/21)Counting objects:  90% (19/21)Counting objects:  95% (20/21)Counting objects: 100% (21/21)Counting objects: 100% (21/21), done.
-Delta compression using up to 8 threads
-Compressing objects:   7% (1/14)Compressing objects:  14% (2/14)Compressing objects:  21% (3/14)Compressing objects:  28% (4/14)Compressing objects:  35% (5/14)Compressing objects:  42% (6/14)Compressing objects:  50% (7/14)Compressing objects:  57% (8/14)Compressing objects:  64% (9/14)Compressing objects:  71% (10/14)Compressing objects:  78% (11/14)Compressing objects:  85% (12/14)Compressing objects:  92% (13/14)Compressing objects: 100% (14/14)Compressing objects: 100% (14/14), done.
-Writing objects:   6% (1/16)Writing objects:  12% (2/16)Writing objects:  18% (3/16)Writing objects:  25% (4/16)Writing objects:  31% (5/16)Writing objects:  37% (6/16)Writing objects:  43% (7/16)Writing objects:  56% (9/16)Writing objects:  62% (10/16)Writing objects:  68% (11/16)Writing objects:  75% (12/16)Writing objects:  81% (13/16)Writing objects:  87% (14/16)Writing objects:  93% (15/16)Writing objects: 100% (16/16)Writing objects: 100% (16/16), 4.52 KiB | 4.52 MiB/s, done.
-Total 16 (delta 5), reused 0 (delta 0), pack-reused 0
-remote: Resolving deltas:   0% (0/5)[Kremote: Resolving deltas:  20% (1/5)[Kremote: Resolving deltas:  40% (2/5)[Kremote: Resolving deltas:  60% (3/5)[Kremote: Resolving deltas:  80% (4/5)[Kremote: Resolving deltas: 100% (5/5)[Kremote: Resolving deltas: 100% (5/5), completed with 3 local objects.[K
-To github.com-mine:mane936/puppeteer.git
-   108eede..d5f9dc5  master -> master
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hgit push origin master[22D                      [22Dgit push origin master      [16D               [15Dyyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m-1[39m
-start Scrapping data
-[2K[1G✨  Done in 2.31s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h
-index is:  [33m-1[39m
-start Scrapping data
-[2K[1G✨  Done in 2.07s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[10D          [10Dyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-start Scrapping data
-[2K[1G✨  Done in 2.06s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-start Scrapping 
- data
-[2K[1G✨  Done in 2.02s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-start Scrapping data
-[2K[1G✨  Done in 2.04s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-w
-s
-:
-/
-/
-[
-:
-:
-1
-]
-:
-9
-2
-2
-2
-/
-d
-e
-v
-t
-o
-o
-l
-s
-/
-b
-r
-o
-w
-s
-e
-r
-/
-e
-f
-6
-a
-6
-b
-2
-6
--
-5
-9
-f
-c
--
-4
-4
-9
-e
--
-b
-8
-b
-d
--
-b
-1
-9
-3
-4
-2
-0
-8
-1
-6
-e
-1
-
-
-
-[
-2
-6
-8
-0
-2
-:
-2
-9
-4
-4
-3
-:
-0
-2
-2
-0
-/
-2
-2
-1
-6
-1
-1
-.
-2
-3
-6
-7
-7
-7
-:
-E
-R
-R
-O
-R
-:
-c
-h
-r
-o
-m
-e
-_
-b
-r
-o
-w
-s
-e
-r
-_
-m
-a
-i
-n
-_
-e
-x
-t
-r
-a
-_
-p
-a
-r
-t
-s
-_
-m
-e
-t
-r
-i
-c
-s
-.
-c
-c
-(
-2
-2
-7
-)
-]
- 
-S
-T
-A
-R
-T
-:
- 
-R
-e
-p
-o
-r
-t
-B
-l
-u
-e
-t
-o
-o
-t
-h
-A
-v
-a
-i
-l
-a
-b
-i
-l
-i
-t
-y
-(
-)
-.
- 
-I
-f
- 
-y
-start Scrapping data
-[2K[1G✨  Done in 2.02s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h[?2004l
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-start Scrapping data
-[2K[1G✨  Done in 2.25s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-start Scrapping data
-[2K[1G✨  Done in 2.21s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004hyarn start[?2004l
-[2K[1G[1myarn run v1.22.17[22m
-[2K[1G[33mwarning[39m ../../../../package.json: No license field
-[2K[1G[2m$ tsc[22m
-[2K[1G[2m$ node --es-module-specifier-resolution=node .[22m
-0: /opt/homebrew/Cellar/node/17.4.0/bin/node
-1: /Users/manelcastrofonseca/Desktop/Other things/Estudio/puppeteer
-checkValues;  [33mfalse[39m
-index is:  [33m462[39m
-wsEndpoint:  ws://[::1]:9222/devtools/browser/ef6a6b26-59fc-449e-b8bd-b193420816e1
-[26802:29443:0220/221611.236777:ERROR:chrome_browser_main_extra_parts_metrics.cc(227)]
-start Scrapping data
-[2K[1G✨  Done in 2.03s.
-[1m[7m%[27m[1m[0m                                                                                                                                                  [0m[27m[24m[Jmanelcastrofonseca@MacBook-Pro-de-Manel puppeteer % [K[?2004h

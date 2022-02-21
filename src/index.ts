@@ -274,14 +274,14 @@ const goBackFromForm = async (frame: puppeteer.Frame) => {
   ]);
 };
 
-const getScrappingData = async () => {
+const getScrappingData = async (endpoint: string) => {
   const ddbbData = await parseXlsx2("output/crossedData3", "crossedData3");
 
   // - check if name and lastnames are equal to ddbb
   // - check if Register is closed
   // - in case it's closed uncheck it
 
-  const { browser, pages, frame } = await getInterfacePuppeteerSetup();
+  const { browser, pages, frame } = await getInterfacePuppeteerSetup(endpoint);
 
   const { TEXT_CURRENT_FILTER_PAGE_TYPE, LINK_FILTER_BY_LIVER } =
     INTERFACE_IDS.FILTER_PAGE;
@@ -1627,6 +1627,7 @@ const getScrappingData = async () => {
 
 // get chromium ws data
 
+const host = "127.0.0.1";
 setTimeout(async () => {
   const outputChrome = await fs.readFileSync("tty/wsregister.txt", "utf-8");
 
@@ -1640,13 +1641,14 @@ setTimeout(async () => {
     wsEndpoint += outputChrome[i];
   }
 
+  wsEndpoint = wsEndpoint.replace("[::1]", host);
+
   console.log("wsEndpoint: ", wsEndpoint);
 
-  console.log("start Scrapping data");
-
   return;
-  getScrappingData();
-}, 300);
+
+  getScrappingData(wsEndpoint);
+}, 30000);
 
 // console.log(
 //   "KEY FOUND",
