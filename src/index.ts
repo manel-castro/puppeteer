@@ -57,7 +57,7 @@ const {
 const { BUTTON_BACK_LIST, LINK_LIST_ITEM } = INTERFACE_IDS.LIST_PAGE;
 const { BUTTON_BACK_FORM } = INTERFACE_IDS.FORM_PAGE;
 
-const excelQARegister = {
+let excelQARegister = {
   headers: ["NHC", "Timestamp", "Type"],
   oldValues: ["", "", "Old Values"],
   newValues: ["", "", "New Values"],
@@ -82,7 +82,12 @@ const PuppeteerSelect = async (
     excelQARegister.headers.push(valueName);
     excelQARegister.oldValues.push(oldValue);
     excelQARegister.newValues.push(newValue);
-    excelQARegister.checkValues.push(newValue == oldValue ? "1" : "0");
+    const valueChanged = newValue == oldValue;
+
+    if (valueChanged) {
+      excelQARegister.checkValues.push(valueChanged ? "1" : "0");
+      frame.waitForNavigation({ waitUntil: "networkidle2" });
+    }
 
     if (!checkValues) {
       await frame.select(elementId, value);
@@ -112,7 +117,15 @@ const PuppeteerDeleteAndType = async (
     excelQARegister.headers.push(valueName);
     excelQARegister.oldValues.push(oldValue);
     excelQARegister.newValues.push(newValue);
-    excelQARegister.checkValues.push(newValue == oldValue ? "1" : "0");
+
+    const valueChanged = newValue == oldValue;
+
+    if (valueChanged) {
+      excelQARegister.checkValues.push(valueChanged ? "1" : "0");
+      excelQARegister.checkValues.push(valueChanged ? "1" : "0");
+      frame.waitForNavigation({ waitUntil: "networkidle2" });
+    }
+
     if (!checkValues) {
       await frame.$eval(elementId, (el: any, value) => (el.value = value), "");
 
@@ -325,7 +338,11 @@ const getScrappingData = async (endpoint?: string) => {
     const currentLastName = currentObservation[HEADERS_LIVER_DDBB.APELLIDO1];
     // const isSecondObs = currentLastName.includes("2"); // not necessarely double form
 
-    const doneNHCs = [12816340, 13067884, 13296015, 10207678];
+    const doneNHCs = [
+      12816340, 13067884, 13296015, 10207678,
+      // next need to be checked
+      11396316, 16384162, 13804187, 11257435, 13109704,
+    ];
     const detectedErrorNHCs = [10207678, 13005406];
     const doubleFormInput = [13297134]; // check
 
@@ -333,7 +350,7 @@ const getScrappingData = async (endpoint?: string) => {
       NHCArray.some((item) => item === currentNHC);
 
     // test only one
-    if (currentNHC != 11396316) continue;
+    // if (currentNHC != 11396316) continue;
 
     // omit multiple
     if (
@@ -352,7 +369,7 @@ const getScrappingData = async (endpoint?: string) => {
 
     console.log("name is: ", currentLastName);
 
-    if (isSecondObs && false) {
+    if (false) {
       console.log("ommiting, is second observation");
 
       await addToUncompletedList(currentObservation, "Is Second Observation");
@@ -1482,6 +1499,10 @@ const getScrappingData = async (endpoint?: string) => {
         Math.round(
           parseFloat(currentObservation[HEADERS_LIVER_DDBB.MARGEN])
         ).toString() || "0";
+
+      console.log("valueAffMargeResAP : ", valueAffMargeResAP);
+      console.log("valueDistMargeResAP89 : ", valueDistMargeResAP);
+
       const valueNumMetAP = currentObservation[HEADERS_LIVER_DDBB.NMETAP] || 0;
 
       console.log("valueNumMetAP: ", valueNumMetAP);
@@ -1758,6 +1779,23 @@ const addToQARegister = async (
     "QARegister",
     [...ddbbData, firstRow, secondRow, thirdRow, fourthRow],
     "register"
+  );
+
+  console.log(
+    "currentObsRegister before: ",
+    JSON.stringify(currentObsRegister, null, 2)
+  );
+
+  currentObsRegister = {
+    headers: ["NHC", "Timestamp", "Type"],
+    oldValues: ["", "", "Old Values"],
+    newValues: ["", "", "New Values"],
+    checkValues: ["", "", "Check"],
+  };
+
+  console.log(
+    "currentObsRegister after: ",
+    JSON.stringify(currentObsRegister, null, 2)
   );
   console.log("added to QA register");
 };
