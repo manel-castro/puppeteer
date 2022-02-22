@@ -144,7 +144,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/0e36c1c9-014f-4ac4-b8ff-ef0dc0dde8d5",
+  wsChromeEndpointurl = " ws://127.0.0.1:9222/devtools/browser/e21c79e4-7260-4004-8d9f-ffbe2dc1c67e",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -350,7 +350,7 @@ const getScrappingData = async (endpoint?: string) => {
       NHCArray.some((item) => item === currentNHC);
 
     // test only one
-    // if (currentNHC != 11396316) continue;
+    if (currentNHC != 13611095) continue;
 
     // omit multiple
     if (
@@ -1640,6 +1640,7 @@ const getScrappingData = async (endpoint?: string) => {
     console.log("SAVING AND GOING TO SEARCH FORM");
 
     frame.waitForNavigation({ waitUntil: "networkidle2" });
+    break;
     await saveForm(frame);
     await goBackFromList(frame);
 
