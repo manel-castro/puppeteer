@@ -263,22 +263,63 @@ const ExecutePuppeteerSearch = (
 
 // // GOBACK FROM LIST
 const goBackFromList = async (frame: puppeteer.Frame) => {
-  await Promise.all([
-    frame.waitForSelector(BUTTON_BACK_LIST),
-    frame.$eval(BUTTON_BACK_LIST, (el: any) => el.click()),
-    frame.waitForNavigation({ waitUntil: "networkidle2" }),
-  ]);
+  // try {
+  //   await frame.waitForSelector(BUTTON_BACK_LIST);
+  // } catch (e) {
+  //   console.warn("Failing waitForSelector(saveButtID);");
+  // }
+  try {
+    await frame.$eval(BUTTON_BACK_LIST, (el: any) => el.click());
+  } catch (e) {
+    console.warn("Failing");
+    console.error(
+      "  await frame.$eval(BUTTON_BACK_LIST, (el: any) => el.click());"
+    );
+  }
+  // await Promise.all([
+  // ]);
+  try {
+    await frame.waitForNavigation({ waitUntil: "networkidle2" });
+  } catch (e) {
+    console.warn("Failing");
+    console.error("WFN");
+  }
 };
 const saveForm = async (frame: puppeteer.Frame) => {
   const saveButtID = INTERFACE_IDS.FORM_PAGE.BUTTON_SAVE_FORM;
-  const saveEl = await frame.$(saveButtID);
-  await frame.waitForTimeout(2000);
 
-  await Promise.all([
-    frame.waitForSelector(saveButtID),
-    saveEl.click(),
-    frame.waitForNavigation({ waitUntil: "networkidle2" }),
-  ]);
+  // try {
+  //   await frame.waitForSelector(saveButtID);
+  // } catch (e) {
+  //   console.warn("Failing waitForSelector(saveButtID);");
+  // }
+  try {
+    console.log("waithForTimeout");
+
+    await frame.waitForTimeout(2000);
+  } catch (e) {
+    console.warn("Failing   await frame.waitForTimeout(2000);  ");
+  }
+
+  try {
+    console.log("trying to get element and click");
+    // const saveEl = await frame.$(saveButtID);
+    // console.log("trying click element");
+    // await saveEl.click();
+    await frame.$eval(saveButtID, (el: any) => el.click());
+  } catch (e) {
+    console.warn("Failing   const saveEl = await frame.$(saveButtID);");
+  }
+
+  // await saveEl.click();
+  // await Promise.all([
+  // ]);
+  try {
+    console.log("trying wait for navigation");
+    await frame.waitForNavigation({ waitUntil: "networkidle2" });
+  } catch (e) {
+    console.warn("Failing WFN");
+  }
 };
 
 const goBackFromForm = async (frame: puppeteer.Frame) => {
@@ -341,7 +382,8 @@ const getScrappingData = async (endpoint?: string) => {
     const doneNHCs = [
       12816340, 13067884, 13296015, 10207678,
       // next need to be checked
-      11396316, 16384162, 13804187, 11257435, 13109704,
+      11396316, 16384162, 13804187, 11257435, 13109704, 13611095, 12817360,
+      11128153, 13203046,
     ];
     const detectedErrorNHCs = [10207678, 13005406];
     const doubleFormInput = [13297134]; // check
@@ -350,7 +392,7 @@ const getScrappingData = async (endpoint?: string) => {
       NHCArray.some((item) => item === currentNHC);
 
     // test only one
-    if (currentNHC != 13611095) continue;
+    // if (currentNHC != 13203046) continue;
 
     // omit multiple
     if (
@@ -1527,7 +1569,7 @@ const getScrappingData = async (endpoint?: string) => {
         ]
       );
 
-      if (valueAffMargeResAP == "1" && valueDistMargeResAP)
+      if (valueDistMargeResAP)
         await PuppeteerDeleteAndType(
           frame,
           basicParseID(HTML_IDS_LIVER.AP.DIST_MARGE_RESSECCIO),
@@ -1639,10 +1681,28 @@ const getScrappingData = async (endpoint?: string) => {
     console.log(currentNHC, " added to completed register");
     console.log("SAVING AND GOING TO SEARCH FORM");
 
-    frame.waitForNavigation({ waitUntil: "networkidle2" });
-    break;
-    await saveForm(frame);
-    await goBackFromList(frame);
+    // try {
+    //   await frame.waitForNavigation({ waitUntil: "networkidle2" });
+    // } catch (e) {
+    //   const errorMessage = "Skipped cautious WFN before saving";
+    //   console.warn(errorMessage);
+    // }
+    // break;
+    try {
+      console.log("trying to save");
+
+      await saveForm(frame);
+      console.log("finished saving");
+    } catch (e) {
+      const errorMessage = "Failed saving form";
+      console.error(errorMessage);
+    }
+    try {
+      await goBackFromList(frame);
+    } catch (e) {
+      const errorMessage = "Failed going back from form";
+      console.error(errorMessage);
+    }
 
     // await frame.waitForSelector(TEXT_INPUT_FROM_DATE);
 
@@ -1787,6 +1847,8 @@ const addToQARegister = async (
     JSON.stringify(currentObsRegister, null, 2)
   );
 
+  // object cleanup
+  // for (var member in currentObsRegister) delete currentObsRegister[member];
   currentObsRegister = {
     headers: ["NHC", "Timestamp", "Type"],
     oldValues: ["", "", "Old Values"],
