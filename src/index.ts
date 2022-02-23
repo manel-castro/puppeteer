@@ -144,7 +144,7 @@ type InterfacePuppeteerSetupRes = {
 };
 
 const getInterfacePuppeteerSetup = (
-  wsChromeEndpointurl = " ws://127.0.0.1:9222/devtools/browser/e21c79e4-7260-4004-8d9f-ffbe2dc1c67e",
+  wsChromeEndpointurl = "ws://127.0.0.1:9222/devtools/browser/6d868572-b962-4e67-932d-431813575014",
   reload = false
 ): Promise<InterfacePuppeteerSetupRes> =>
   new Promise(async (res, rej) => {
@@ -380,10 +380,10 @@ const getScrappingData = async (endpoint?: string) => {
     // const isSecondObs = currentLastName.includes("2"); // not necessarely double form
 
     const doneNHCs = [
-      12816340, 13067884, 13296015, 10207678,
+      12816340, 13067884, 13296015, 10207678, 11396316, 16384162, 13804187,
+      11257435, 13109704,
       // next need to be checked
-      11396316, 16384162, 13804187, 11257435, 13109704, 13611095, 12817360,
-      11128153, 13203046,
+      13611095, 12817360, 13611095, 12817360, 11128153, 13203046,
     ];
     const detectedErrorNHCs = [10207678, 13005406];
     const doubleFormInput = [13297134]; // check
@@ -392,7 +392,13 @@ const getScrappingData = async (endpoint?: string) => {
       NHCArray.some((item) => item === currentNHC);
 
     // test only one
-    // if (currentNHC != 13203046) continue;
+    if (
+      currentNHC != 13611095 &&
+      currentNHC != 12817360 &&
+      currentNHC != 11128153 &&
+      currentNHC != 13203046
+    )
+      continue;
 
     // omit multiple
     if (
@@ -596,10 +602,9 @@ const getScrappingData = async (endpoint?: string) => {
       new Date(98, 3)
     );
 
-    const isDataDiagnosticUnrealistic =
-      true ||
-      !diffDateIqAndDiagnosticInMilliseconds ||
-      diffDateIqAndDiagnosticInMilliseconds > halfYearInMilliseconds;
+    const isDataDiagnosticUnrealistic = false;
+    // !diffDateIqAndDiagnosticInMilliseconds ||
+    // diffDateIqAndDiagnosticInMilliseconds > halfYearInMilliseconds;
 
     const DataDiagnosticInOddFormat = isDataDiagnosticUnrealistic
       ? formatDate(ValueDataIngres - twoMonthsInMilliseconds)
@@ -1842,11 +1847,6 @@ const addToQARegister = async (
     "register"
   );
 
-  console.log(
-    "currentObsRegister before: ",
-    JSON.stringify(currentObsRegister, null, 2)
-  );
-
   // object cleanup
   // for (var member in currentObsRegister) delete currentObsRegister[member];
   currentObsRegister = {
@@ -1856,10 +1856,6 @@ const addToQARegister = async (
     checkValues: ["", "", "Check"],
   };
 
-  console.log(
-    "currentObsRegister after: ",
-    JSON.stringify(currentObsRegister, null, 2)
-  );
   console.log("added to QA register");
 };
 
